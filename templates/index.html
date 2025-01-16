@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Similarity</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/CS.css') }}">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Styles for the loading spinner */
+        #loading {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 18px;
+            text-align: center;
+            z-index: 1000;
+        }
+
+        #loading img {
+            width: 50px;
+            height: 50px;
+        }
+
+        #overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <!-- Navigation Bar -->
+    <nav class="bg-gray-900 p-4 fixed w-full top-0 left-0 z-50 shadow-lg">
+        <div class="container mx-auto flex justify-between items-center">
+            <a href="#" class="text-white text-xl font-bold">Art Gallery</a>
+            <div class="space-x-4">
+                <a href="{{ url_for('upload_image') }}" class="text-white hover:text-green-400">Search By Image</a>
+                <a href="{{ url_for('second') }}" class="text-white hover:text-green-400">View 3D Art Gallery</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container mx-auto mt-20 p-6 bg-white shadow-lg rounded-lg">
+        <h1 class="text-2xl font-bold text-gray-800 mb-6 text-center">Upload an Image to Find Similar Art</h1>
+
+        <form method="POST" enctype="multipart/form-data" class="flex flex-col items-center space-y-4">
+            <input 
+                type="file" 
+                name="file" 
+                id="fileInput" 
+                accept="image/*" 
+                required 
+                class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 
+                       file:rounded-lg file:border-0 file:text-sm file:font-semibold 
+                       file:bg-green-100 file:text-green-700 hover:file:bg-green-200">
+
+            <button 
+                type="submit" 
+                id="uploadButton" 
+                class="bg-green-500 text-white px-6 py-2 rounded-lg font-semibold hover:bg-green-600 transition-all">
+                Upload
+            </button>
+        </form>
+
+        <div id="result" class="mt-10 text-center">
+            <h2 class="text-xl font-semibold text-gray-700">Most Similar Image</h2>
+            <img 
+                id="similar_image" 
+                src="" 
+                alt="Most similar image will appear here" 
+                class="mt-4 mx-auto rounded-lg shadow-lg" 
+                style="display: none; width: 300px; height: auto;">
+            <p id="similarity_score" class="text-green-600 font-medium mt-2"></p>
+            <div id="below_threshold_message" class="mt-6 text-red-600" style="display: none;">
+                <p class="mb-4">Hey, I tried to match your image to the best of my ability, but it may not be the exact one you're looking for. Kindly reach out to support by filling out this form:</p>
+                <a 
+                    href="https://docs.google.com/forms/d/1gM6dmB9j6ylJBGZF3uQxto2k1HIPBUTEfeDfK7EK6Ns/edit" 
+                    target="_blank" 
+                    class="text-blue-600 underline hover:text-blue-800">
+                    Support Form
+                </a>
+                <img 
+                    src="{{ url_for('static', filename='images/oops.png') }}" 
+                    alt="Oops!" 
+                    class="mt-4 mx-auto" 
+                    style="width: 200px;">
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Spinner -->
+    <div id="overlay"></div>
+    <div id="loading">
+        <img src="{{ url_for('static', filename='images/loading_spinner.png') }}" alt="Loading...">
+        <p class="text-gray-600">Processing your image...</p>
+    </div>
+
+    <script>
+        const form = document.querySelector('form');
+        const loadingOverlay = document.getElementById('overlay');
+        const loadingSpinner = document.getElementById('loading');
+
+        form.onsubmit = async (e) => {
+            e.preventDefault();
+
+            const fileInput = document.getElementById('fileInput');
+            if (!fileInput.files.length) {
+                alert("Please select an image file to upload.");
+                return;
+            }
+
+            // Show loading spinner
+            loadingOverlay.style.display = 'block';
+            loadingSpinner.style.display = 'block';
+
+            const formData = new FormData(form);
+            try {
+                const response = await fetch('/index', {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                const data = await response.json();
+
+                const imageElement = document.getElementById('similar_image');
+                const scoreElement = document.getElementById('similarity_score');
+                const belowThresholdMessage = document.getElementById('below_threshold_message');
+
+                if (data.below_threshold) {
+                    belowThresholdMessage.style.display = 'block';
+                    imageElement.style.display = 'none';
+                    scoreElement.textContent = '';
+                } else {
+                    imageElement.src = data.most_similar_image;
+                    imageElement.style.display = 'block';
+                    scoreElement.textContent = "Similarity Score: " + data.similarity_score.toFixed(2);
+                    belowThresholdMessage.style.display = 'none';
+                }
+            } catch (error) {
+                alert("An error occurred. Please try again.");
+            } finally {
+                // Hide loading spinner
+                loadingOverlay.style.display = 'none';
+                loadingSpinner.style.display = 'none';
+            }
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Art Gallery Landing Page</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Tooltip styling */
+        #chatbotTooltip {
+            position: absolute;
+            bottom: 80px;
+            right: 80px;
+            background-color: #ffffff;
+            color: #333333;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Main content section -->   
+    <div class="container">
+        <nav class="bg-gray-900 p-4 fixed w-full top-0 left-0 z-50 shadow-lg">
+            <div class="container mx-auto flex justify-between items-center">
+                <a href="#" class="text-white text-xl font-bold">Art Gallery</a>
+                <div class="space-x-4">
+                    <a href="{{ url_for('upload_image') }}" class="text-white hover:text-green-400">Search By Image</a>
+                    <a href="{{ url_for('second') }}" class="text-white hover:text-green-400">View 3D Art Gallery</a>
+                </div>
+            </div>
+        </nav>
+        <!-- Art cards section -->
+        <div class="art-cards" id="artCardsContainer">
+            <!-- Cards will be dynamically generated here -->
+        </div>
+
+    </div>
+
+    <!-- Popup Modal -->
+    <div id="popupModal" class="modal">
+        <div class="modal-content">
+            <span id="closeModal" class="close">&times;</span>
+            <img id="modalImage" src="" alt="Art Image">
+            <h3 id="modalTitle"></h3>
+            <p id="modalDescription"></p>
+        </div>
+    </div>
+
+    <!-- Chatbot Popup -->
+    <div id="chatbotPopup" class="fixed bottom-6 right-6 bg-white p-4 rounded-lg shadow-lg hidden">
+        <div class="chatbot-header">
+            <h4>Hey..! How can I assist you?</h4>
+            <button id="closeChatbot" class="text-gray-500 hover:text-gray-700 text-xl">&times;</button>
+        </div>
+        <div class="chatbot-body">
+            <iframe width="350" height="430" allow="microphone;" src="https://console.dialogflow.com/api-client/demo/embedded/e2ac4541-eef5-49ae-a1d5-4d47ecdb1190"></iframe>
+        </div>
+    </div>
+
+    <!-- Tooltip for Chatbot -->
+    <div id="chatbotTooltip">Hi, I am chatbot!</div>
+
+    <!-- Circular Chatbot button -->
+    <button id="chatbotButton" class="fixed bottom-6 right-6 bg-green-500 text-white rounded-full p-4 shadow-lg hover:bg-green-600 transition duration-300" onclick="toggleChatbot()">💬</button>
+
+    <!-- Link to JavaScript file -->
+    <script src="{{ url_for('static', filename='js/scripts.js') }}"></script>
+
+    <script>
+        // Image similarity form handling
+        const form = document.querySelector('form');
+        form.onsubmit = async (e) => {
+            e.preventDefault();
+
+            const fileInput = document.getElementById('fileInput');
+            if (!fileInput.files.length) {
+                alert("Please select an image file to upload.");
+                return;
+            }
+
+            const formData = new FormData(form);
+            const response = await fetch('/', {
+                method: 'POST',
+                body: formData,
+            });
+
+            const data = await response.json();
+
+            const imageElement = document.getElementById('similar_image');
+            const scoreElement = document.getElementById('similarity_score');
+            const belowThresholdMessage = document.getElementById('below_threshold_message');
+
+            if (data.below_threshold) {
+                belowThresholdMessage.style.display = 'block';
+                imageElement.style.display = 'none';
+                scoreElement.textContent = '';
+            } else {
+                imageElement.src = data.most_similar_image;
+                imageElement.style.display = 'block';
+                scoreElement.textContent = "Similarity Score: " + data.similarity_score.toFixed(2);
+                belowThresholdMessage.style.display = 'none';
+            }
+        };
+
+        // Toggle the visibility of the chatbot and tooltip
+        function toggleChatbot() {
+            var chatbot = document.getElementById("chatbotPopup");
+            var tooltip = document.getElementById("chatbotTooltip");
+
+            if (chatbot.style.display === "none" || chatbot.style.display === "") {
+                chatbot.style.display = "block";  // Show the chatbot
+                tooltip.style.display = "none";   // Hide the tooltip
+            } else {
+                chatbot.style.display = "none";   // Hide the chatbot
+                tooltip.style.display = "block";  // Show the tooltip
+            }
+        }
+
+        // Show tooltip on page load if chatbot is closed
+        window.onload = function () {
+            var chatbot = document.getElementById("chatbotPopup");
+            var tooltip = document.getElementById("chatbotTooltip");
+
+            if (chatbot.style.display === "none" || chatbot.style.display === "") {
+                tooltip.style.display = "block";  // Show the tooltip on load
+            }
+        };
+
+        // Close the chatbot when the close button is clicked
+        document.getElementById("closeChatbot").onclick = function () {
+            document.getElementById("chatbotPopup").style.display = "none";
+            document.getElementById("chatbotTooltip").style.display = "block"; // Show tooltip again
+        };
+    </script>
+
+</body>
+</html>
