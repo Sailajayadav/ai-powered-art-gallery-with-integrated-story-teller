@@ -3,11 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Image Similarity</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/CS.css') }}">
+    <title>Image Similarity - Art Gallery</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* Styles for the loading spinner */
+        /* Body background - Resembling a vintage gallery */
+        body {
+            background: linear-gradient(to bottom, #3E1F1F, #1F0F0F);
+            color: #EAE0C8;
+            font-family: 'Merriweather', serif;
+        }
+
+        /* Loading Spinner */
         #loading {
             display: none;
             position: fixed;
@@ -31,26 +37,37 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
+            background-color: rgba(0, 0, 0, 0.6);
             z-index: 999;
         }
     </style>
 </head>
-<body class="bg-gray-100">
+<body>
+
     <!-- Navigation Bar -->
-    <nav class="bg-gray-900 p-4 fixed w-full top-0 left-0 z-50 shadow-lg">
+    <nav class="bg-[#4A1A1A] p-4 fixed w-full top-0 left-0 z-50 shadow-lg">
         <div class="container mx-auto flex justify-between items-center">
-            <a href="#" class="text-white text-xl font-bold">Art Gallery</a>
-            <div class="space-x-4">
-                <a href="{{ url_for('upload_image') }}" class="text-white hover:text-green-400">Search By Image</a>
-                <a href="{{ url_for('second') }}" class="text-white hover:text-green-400">View 3D Art Gallery</a>
+            <a href="#" class="text-[#FFD700] text-2xl font-bold tracking-widest">🎨 Art Gallery</a>
+            <div class="flex space-x-4">
+                <a href="{{ url_for('upload_image') }}" 
+                   class="bg-[#D4AF37] text-black font-semibold px-4 py-2 rounded-lg shadow-md transition duration-300 transform hover:bg-[#B8860B] hover:scale-105 hover:shadow-lg">
+                   🔍 Search By Image
+                </a>
+                <a href="{{ url_for('second') }}" 
+                   class="bg-[#D4AF37] text-black font-semibold px-4 py-2 rounded-lg shadow-md transition duration-300 transform hover:bg-[#B8860B] hover:scale-105 hover:shadow-lg">
+                   🏛 View 3D Art Gallery
+                </a>
+                <a href="https://kidcanvas.onrender.com/home" 
+                   class="bg-[#D4AF37] text-black font-semibold px-4 py-2 rounded-lg shadow-md transition duration-300 transform hover:bg-[#B8860B] hover:scale-105 hover:shadow-lg">
+                   🎨 Try Kids Zone
+                </a>
             </div>
         </div>
     </nav>
 
     <!-- Main Content -->
-    <div class="container mx-auto mt-20 p-6 bg-white shadow-lg rounded-lg">
-        <h1 class="text-2xl font-bold text-gray-800 mb-6 text-center">Upload an Image to Find Similar Art</h1>
+    <div class="container mx-auto mt-24 p-8 bg-[#2E1B1B] shadow-xl rounded-lg border border-[#FFD700]">
+        <h1 class="text-3xl font-bold text-[#FFD700] mb-6 text-center">Upload an Image to Find Similar Art</h1>
 
         <form method="POST" enctype="multipart/form-data" class="flex flex-col items-center space-y-4">
             <input 
@@ -59,33 +76,33 @@
                 id="fileInput" 
                 accept="image/*" 
                 required 
-                class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 
+                class="block w-full text-sm text-gray-300 file:mr-4 file:py-2 file:px-4 
                        file:rounded-lg file:border-0 file:text-sm file:font-semibold 
-                       file:bg-green-100 file:text-green-700 hover:file:bg-green-200">
+                       file:bg-[#A67C00] file:text-white hover:file:bg-[#8B6508] transition-all">
 
             <button 
                 type="submit" 
                 id="uploadButton" 
-                class="bg-green-500 text-white px-6 py-2 rounded-lg font-semibold hover:bg-green-600 transition-all">
-                Upload
+                class="bg-[#D4AF37] text-black px-6 py-2 rounded-lg font-semibold hover:bg-[#B8860B] transition-all">
+                🎭 Upload
             </button>
         </form>
 
         <div id="result" class="mt-10 text-center">
-            <h2 class="text-xl font-semibold text-gray-700">Most Similar Image</h2>
+            <h2 class="text-xl font-semibold text-[#FFD700]">Most Similar Image</h2>
             <img 
                 id="similar_image" 
                 src="" 
                 alt="Most similar image will appear here" 
-                class="mt-4 mx-auto rounded-lg shadow-lg" 
+                class="mt-4 mx-auto rounded-lg shadow-lg border border-[#FFD700]" 
                 style="display: none; width: 300px; height: auto;">
-            <p id="similarity_score" class="text-green-600 font-medium mt-2"></p>
-            <div id="below_threshold_message" class="mt-6 text-red-600" style="display: none;">
+            <p id="similarity_score" class="text-green-400 font-medium mt-2"></p>
+            <div id="below_threshold_message" class="mt-6 text-red-500" style="display: none;">
                 <p class="mb-4">Hey, I tried to match your image to the best of my ability, but it may not be the exact one you're looking for. Kindly reach out to support by filling out this form:</p>
                 <a 
                     href="https://docs.google.com/forms/d/1gM6dmB9j6ylJBGZF3uQxto2k1HIPBUTEfeDfK7EK6Ns/edit" 
                     target="_blank" 
-                    class="text-blue-600 underline hover:text-blue-800">
+                    class="text-blue-400 underline hover:text-blue-600 transition-all">
                     Support Form
                 </a>
                 <img 
@@ -97,11 +114,17 @@
         </div>
     </div>
 
+    <!-- Chatbot Button -->
+    <button id="chatbotButton" 
+        class="fixed bottom-6 right-6 bg-[#8B4513] text-white font-semibold rounded-full p-4 shadow-lg transition duration-300 transform hover:bg-[#A0522D] hover:scale-110 hover:shadow-xl"
+        onclick="toggleChatbot()">💬
+    </button>
+
     <!-- Loading Spinner -->
     <div id="overlay"></div>
     <div id="loading">
         <img src="{{ url_for('static', filename='images/loading_spinner.png') }}" alt="Loading...">
-        <p class="text-gray-600">Processing your image...</p>
+        <p class="text-gray-400">Processing your image...</p>
     </div>
 
     <script>
@@ -118,7 +141,6 @@
                 return;
             }
 
-            // Show loading spinner
             loadingOverlay.style.display = 'block';
             loadingSpinner.style.display = 'block';
 
@@ -148,7 +170,6 @@
             } catch (error) {
                 alert("An error occurred. Please try again.");
             } finally {
-                // Hide loading spinner
                 loadingOverlay.style.display = 'none';
                 loadingSpinner.style.display = 'none';
             }

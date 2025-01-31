@@ -54,6 +54,11 @@ def signup():
     """Render the Sign-Up Page."""
     return render_template("signup.html")
 
+@app.route("/3d")
+def Threed():
+    """Render the Sign-Up Page."""
+    return render_template("3d.html")
+
 @app.route("/home")
 def home():
     """Render the Home Page."""

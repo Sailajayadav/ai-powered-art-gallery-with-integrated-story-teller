@@ -9,16 +9,15 @@
     <style>
         /* Tooltip styling */
         #chatbotTooltip {
-            position: absolute;
-            bottom: 80px;
-            right: 80px;
-            background-color: #ffffff;
-            color: #333333;
-            padding: 8px 12px;
-            border-radius: 8px;
-            font-size: 14px;
-            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-            display: none;
+            position: fixed;
+            bottom: 4rem;
+            right: 5rem;
+            background: rgba(204, 148, 6, 0.938);
+            color: rgb(17, 16, 16);
+            padding: 12px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: block;
         }
     </style>
 </head>
@@ -26,15 +25,26 @@
 
     <!-- Main content section -->   
     <div class="container">
-        <nav class="bg-gray-900 p-4 fixed w-full top-0 left-0 z-50 shadow-lg">
+        <nav class="bg-[#4A1A1A] p-4 fixed w-full top-0 left-0 z-50 shadow-lg">
             <div class="container mx-auto flex justify-between items-center">
-                <a href="#" class="text-white text-xl font-bold">Art Gallery</a>
-                <div class="space-x-4">
-                    <a href="{{ url_for('upload_image') }}" class="text-white hover:text-green-400">Search By Image</a>
-                    <a href="{{ url_for('second') }}" class="text-white hover:text-green-400">View 3D Art Gallery</a>
+                <a href="#" class="text-[#FFD700] text-2xl font-bold tracking-widest">🎨 Art Gallery</a>
+                <div class="flex space-x-4">
+                    <a href="{{ url_for('upload_image') }}" 
+                       class="bg-[#D4AF37] text-black font-semibold px-4 py-2 rounded-lg shadow-md transition duration-300 transform hover:bg-[#B8860B] hover:scale-105 hover:shadow-lg">
+                       🔍 Search By Image
+                    </a>
+                    <a href="{{ url_for('second') }}" 
+                       class="bg-[#D4AF37] text-black font-semibold px-4 py-2 rounded-lg shadow-md transition duration-300 transform hover:bg-[#B8860B] hover:scale-105 hover:shadow-lg">
+                       🏛 View 3D Art Gallery
+                    </a>
+                    <a href="https://kidcanvas.onrender.com/home" 
+                       class="bg-[#D4AF37] text-black font-semibold px-4 py-2 rounded-lg shadow-md transition duration-300 transform hover:bg-[#B8860B] hover:scale-105 hover:shadow-lg">
+                       🎨 Try Kids Zone
+                    </a>
                 </div>
             </div>
         </nav>
+        
         <!-- Art cards section -->
         <div class="art-cards" id="artCardsContainer">
             <!-- Cards will be dynamically generated here -->
@@ -52,22 +62,39 @@
         </div>
     </div>
 
-    <!-- Chatbot Popup -->
-    <div id="chatbotPopup" class="fixed bottom-6 right-6 bg-white p-4 rounded-lg shadow-lg hidden">
-        <div class="chatbot-header">
-            <h4>Hey..! How can I assist you?</h4>
-            <button id="closeChatbot" class="text-gray-500 hover:text-gray-700 text-xl">&times;</button>
-        </div>
-        <div class="chatbot-body">
-            <iframe width="350" height="430" allow="microphone;" src="https://console.dialogflow.com/api-client/demo/embedded/e2ac4541-eef5-49ae-a1d5-4d47ecdb1190"></iframe>
+   <!-- Chatbot Popup -->
+   <div id="chatbotPopup" class="fixed bottom-5 right-6 bg-gradient-to-br from-brown-700 to-yellow-600 p-6 rounded-3xl shadow-2xl hidden" style="width: 350px; height: 500px;">
+    
+    <!-- Chatbot Header -->
+    <div class="text-center text-white font-bold text-xl p-2 border-b-2 border-white bg-[#8B4513] rounded-t-xl">
+        Hi..How can Help you..!
+    </div>
+    
+    
+
+    <!-- Chatbot Content -->
+    <div class="chatbot-body" style="height: calc(100% - 40px); background: rgba(255, 255, 255, 0.7); border-radius: 15px;">
+            <iframe
+                src="https://www.chatbase.co/chatbot-iframe/ll7F2mwUJaNoTFgXmW7PV"
+                width="100%"
+                height="100%"
+                frameborder="0"
+                style="border-radius: 12px; border: 4px solid rgba(255, 255, 255, 0.6);"
+            ></iframe>
         </div>
     </div>
+
+</div>
 
     <!-- Tooltip for Chatbot -->
     <div id="chatbotTooltip">Hi, I am chatbot!</div>
 
     <!-- Circular Chatbot button -->
-    <button id="chatbotButton" class="fixed bottom-6 right-6 bg-green-500 text-white rounded-full p-4 shadow-lg hover:bg-green-600 transition duration-300" onclick="toggleChatbot()">💬</button>
+    <button id="chatbotButton" 
+        class="fixed bottom-6 right-6 bg-[#8B4513] text-white font-semibold rounded-full p-4 shadow-lg transition duration-300 transform hover:bg-[#A0522D] hover:scale-110 hover:shadow-xl"
+        onclick="toggleChatbot()">💬
+    </button>
+
 
     <!-- Link to JavaScript file -->
     <script src="{{ url_for('static', filename='js/scripts.js') }}"></script>
@@ -137,6 +164,7 @@
             document.getElementById("chatbotPopup").style.display = "none";
             document.getElementById("chatbotTooltip").style.display = "block"; // Show tooltip again
         };
+
     </script>
 
 </body>
