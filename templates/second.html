@@ -92,13 +92,49 @@
       .clickable:hover {
         opacity: 0.9;
       }
+      /* Add these touch control styles */
+      .mobile-controls {
+        position: fixed;
+        bottom: 20px;
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        padding: 0 20px;
+        z-index: 1000;
+      }
+
+      .touch-button {
+        width: 60px;
+        height: 60px;
+        background: rgba(228, 192, 127, 0.5);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        color: white;
+        user-select: none;
+        touch-action: manipulation;
+      }
+
+      /* Hide controls on desktop */
+      @media (min-width: 769px) {
+        .mobile-controls {
+          display: none;
+        }
+      }
     </style>
   </head>
   <body>
     <div class="navigation-hint">
       WASD to Move • Mouse to Look • Hover for Details
     </div>
-
+    <!-- Add these elements after your a-scene -->
+    <div class="mobile-controls">
+      <div class="touch-button" id="rotate-left">↺</div>
+      <div class="touch-button" id="move-forward">↑</div>
+      <div class="touch-button" id="rotate-right">↻</div>
+    </div>
     <a-scene>
       <a-assets>
         <audio
@@ -107,8 +143,14 @@
           autoplay
           loop
         ></audio>
-        <img id="wall-texture" src="https://raw.githubusercontent.com/Krizzna69/images_for_art/main/wallpaper.png" />
-        <img id="floor-texture" src="https://raw.githubusercontent.com/Krizzna69/images_for_art/main/Marble004." />
+        <img
+          id="wall-texture"
+          src="https://raw.githubusercontent.com/Krizzna69/images_for_art/main/wallpaper.png"
+        />
+        <img
+          id="floor-texture"
+          src="https://raw.githubusercontent.com/Krizzna69/images_for_art/main/Marble004."
+        />
       </a-assets>
 
       <a-entity
@@ -1005,130 +1047,260 @@
     </div>
 
     <script>
-        // Initialize speech synthesis
-        const synth = window.speechSynthesis;
-        let isAudioEnabled = true;
-        let voices = [];
-    
-        // Function to load voices
-        function loadVoices() {
-            voices = synth.getVoices();
-            if (voices.length === 0) {
-                console.warn('No voices found. Audio will not be available.');
-            }
-        }
-    
-        // Check if voices are already loaded
-        if (synth.onvoiceschanged !== undefined) {
-            synth.onvoiceschanged = loadVoices;
-        } else {
-            loadVoices();
-        }
-    
-        // Artwork information
-        const artworkInfo = {
-            'image-1': {
-                title: 'RV Institute of Technology',
-                description: 'Welcome to RV Institute of Technology. A premier institution known for excellence in engineering education.'
-            },
-            'image-2': {
-                title: 'NRIIT',
-                description: 'The NRI Institute of Technology offers world-class undergraduate and postgraduate programs in engineering and technology fields.'
-            },
-            'image-3': {
-                title: 'RV Faculty',
-                description: 'Technology company and training institute specializing in providing software solutions and skill-based education in cutting-edge technologies.'
-            },
-            'image-4': {
-                title: 'Las Meninas',
-                description: 'Las Meninas is a 1656 painting in the Museo del Prado in Madrid, by Diego Velázquez, the leading artist of the Spanish Baroque.'
-            },
-            'image-5': {
-                title: 'Mona Lisa',
-                description: 'The Mona Lisa, Leonardo da Vinci\'s Renaissance masterpiece, is perhaps the most famous painting in the world.'
-            },
-            'image-6': {
-                title: 'Starry Night',
-                description: 'The Starry Night by Vincent van Gogh, painted in 1889, captures the view from his asylum room with an imaginary village below.'
-            },
-            'image-7': {
-                title: 'Girl with Pearl Earring',
-                description: 'Girl with a Pearl Earring, Vermeer\'s Dutch Golden Age masterpiece, is known for its mysterious subject and striking composition.'
-            },
-            'image-8': {
-                title: 'The Banana',
-                description: 'This controversial artwork of a banana sold for \$6.2 million at Sotheby\'s contemporary art auction, becoming arguably the most expensive fruit in the world.'
-            }
-        };
-    
-        // Audio toggle functionality
-        const audioToggle = document.querySelector('.audio-toggle');
-        const popup = document.getElementById('popup');
-        const popupHead = document.getElementById('popup-head');
-        const popupText = document.getElementById('popup-text');
-    
-        audioToggle.addEventListener('click', () => {
-            isAudioEnabled = !isAudioEnabled;
-            audioToggle.innerHTML = isAudioEnabled ?
-                '<i class="fas fa-volume-up"></i>' :
-                '<i class="fas fa-volume-mute"></i>';
-            if (!isAudioEnabled) {
-                synth.cancel();
-            }
-        });
-    
-        // Function to speak text with error handling
-        function speakText(text) {
-            if (!isAudioEnabled) return;
-    
-            if (voices.length === 0) {
-                console.warn('No voices available to speak the text.');
-                return;
-            }
-    
-            // Cancel any ongoing speech
-            synth.cancel();
-    
-            // Create new utterance
-            const utterance = new SpeechSynthesisUtterance(text);
-    
-            // Configure utterance
-            utterance.rate = 0.9;
-            utterance.pitch = 1;
-            utterance.volume = 1;
-    
-            // Assign the first available voice
-            utterance.voice = voices[0];
-    
-            // Speak the text
-            synth.speak(utterance);
-        }
-    
-        // Add event listeners to artwork
-        document.querySelectorAll('.interactive').forEach(artwork => {
-            artwork.addEventListener('mouseenter', () => {
-                const info = artworkInfo[artwork.id];
-                if (!info) return;
-    
-                // Display popup
-                popup.style.display = 'block';
-                popupHead.textContent = info.title;
-                popupText.textContent = info.description;
-    
-                // Speak the information
-                if (isAudioEnabled) {
-                    speakText(`${info.title}. ${info.description}`);
-                }
-            });
-    
-            artwork.addEventListener('mouseleave', () => {
-                popup.style.display = 'none';
-                synth.cancel();
-            });
-        });
-    
-        // Initialize user info
+      // Initialize speech synthesis
+      const synth = window.speechSynthesis;
+      let isAudioEnabled = true;
+      let voices = [];
 
+      // Function to load voices
+      function loadVoices() {
+        voices = synth.getVoices();
+        if (voices.length === 0) {
+          console.warn("No voices found. Audio will not be available.");
+        }
+      }
+
+      // Check if voices are already loaded
+      if (synth.onvoiceschanged !== undefined) {
+        synth.onvoiceschanged = loadVoices;
+      } else {
+        loadVoices();
+      }
+
+      // Artwork information
+      const artworkInfo = {
+        "image-1": {
+          title: "RV Institute of Technology",
+          description:
+            "Welcome to RV Institute of Technology. A premier institution known for excellence in engineering education.",
+        },
+        "image-2": {
+          title: "NRIIT",
+          description:
+            "The NRI Institute of Technology offers world-class undergraduate and postgraduate programs in engineering and technology fields.",
+        },
+        "image-3": {
+          title: "RV Faculty",
+          description:
+            "Technology company and training institute specializing in providing software solutions and skill-based education in cutting-edge technologies.",
+        },
+        "image-4": {
+          title: "Las Meninas",
+          description:
+            "Las Meninas is a 1656 painting in the Museo del Prado in Madrid, by Diego Velázquez, the leading artist of the Spanish Baroque.",
+        },
+        "image-5": {
+          title: "Mona Lisa",
+          description:
+            "The Mona Lisa, Leonardo da Vinci's Renaissance masterpiece, is perhaps the most famous painting in the world.",
+        },
+        "image-6": {
+          title: "Starry Night",
+          description:
+            "The Starry Night by Vincent van Gogh, painted in 1889, captures the view from his asylum room with an imaginary village below.",
+        },
+        "image-7": {
+          title: "Girl with Pearl Earring",
+          description:
+            "Girl with a Pearl Earring, Vermeer's Dutch Golden Age masterpiece, is known for its mysterious subject and striking composition.",
+        },
+        "image-8": {
+          title: "The Banana",
+          description:
+            "This controversial artwork of a banana sold for \$6.2 million at Sotheby's contemporary art auction, becoming arguably the most expensive fruit in the world.",
+        },
+      };
+
+      // Audio toggle functionality
+      const audioToggle = document.querySelector(".audio-toggle");
+      const popup = document.getElementById("popup");
+      const popupHead = document.getElementById("popup-head");
+      const popupText = document.getElementById("popup-text");
+
+      audioToggle.addEventListener("click", () => {
+        isAudioEnabled = !isAudioEnabled;
+        audioToggle.innerHTML = isAudioEnabled
+          ? '<i class="fas fa-volume-up"></i>'
+          : '<i class="fas fa-volume-mute"></i>';
+        if (!isAudioEnabled) {
+          synth.cancel();
+        }
+      });
+
+      // Function to speak text with error handling
+      function speakText(text) {
+        if (!isAudioEnabled) return;
+
+        if (voices.length === 0) {
+          console.warn("No voices available to speak the text.");
+          return;
+        }
+
+        // Cancel any ongoing speech
+        synth.cancel();
+
+        // Create new utterance
+        const utterance = new SpeechSynthesisUtterance(text);
+
+        // Configure utterance
+        utterance.rate = 0.9;
+        utterance.pitch = 1;
+        utterance.volume = 1;
+
+        // Assign the first available voice
+        utterance.voice = voices[0];
+
+        // Speak the text
+        synth.speak(utterance);
+      }
+
+      // Add event listeners to artwork
+      document.querySelectorAll(".interactive").forEach((artwork) => {
+        artwork.addEventListener("mouseenter", () => {
+          const info = artworkInfo[artwork.id];
+          if (!info) return;
+
+          // Display popup
+          popup.style.display = "block";
+          popupHead.textContent = info.title;
+          popupText.textContent = info.description;
+
+          // Speak the information
+          if (isAudioEnabled) {
+            speakText(`${info.title}. ${info.description}`);
+          }
+        });
+
+        artwork.addEventListener("mouseleave", () => {
+          popup.style.display = "none";
+          synth.cancel();
+        });
+      });
+      document.addEventListener("DOMContentLoaded", function () {
+        // Mobile touch controls
+        let touchStartX = 0;
+        let touchStartY = 0;
+        let camera = document.querySelector("a-camera");
+
+        // Touch start event
+        document.addEventListener("touchstart", function (e) {
+          touchStartX = e.touches[0].clientX;
+          touchStartY = e.touches[0].clientY;
+        });
+
+        // Touch move event
+        document.addEventListener("touchmove", function (e) {
+          if (!touchStartX || !touchStartY) {
+            return;
+          }
+
+          let touchEndX = e.touches[0].clientX;
+          let touchEndY = e.touches[0].clientY;
+
+          let deltaX = touchStartX - touchEndX;
+          let deltaY = touchStartY - touchEndY;
+
+          // Get current camera position
+          let position = camera.getAttribute("position");
+
+          // Movement speed
+          const moveSpeed = 0.1;
+
+          // Update camera position based on touch movement
+          position.x -= deltaX * moveSpeed;
+          position.z -= deltaY * moveSpeed;
+
+          // Apply new position
+          camera.setAttribute("position", position);
+
+          // Update touch start position
+          touchStartX = touchEndX;
+          touchStartY = touchEndY;
+        });
+
+        // Touch end event
+        document.addEventListener("touchend", function () {
+          touchStartX = 0;
+          touchStartY = 0;
+        });
+
+        // Add virtual joystick for movement
+        const joystickContainer = document.createElement("div");
+        joystickContainer.innerHTML = `
+        <div id="joystick-container" style="
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            width: 100px;
+            height: 100px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            z-index: 1000;
+        ">
+            <div id="joystick" style="
+                position: absolute;
+                top: 25px;
+                left: 25px;
+                width: 50px;
+                height: 50px;
+                background: #e4c07f;
+                border-radius: 50%;
+                cursor: pointer;
+            "></div>
+        </div>
+    `;
+        document.body.appendChild(joystickContainer);
+
+        // Joystick controls
+        const joystick = document.getElementById("joystick");
+        const joystickBox = document.getElementById("joystick-container");
+        let isDragging = false;
+
+        joystick.addEventListener("touchstart", (e) => {
+          isDragging = true;
+        });
+
+        document.addEventListener("touchmove", (e) => {
+          if (!isDragging) return;
+
+          const touch = e.touches[0];
+          const box = joystickBox.getBoundingClientRect();
+          const boxCenterX = box.left + box.width / 2;
+          const boxCenterY = box.top + box.height / 2;
+
+          let deltaX = touch.clientX - boxCenterX;
+          let deltaY = touch.clientY - boxCenterY;
+
+          // Limit joystick movement to container bounds
+          const radius = box.width / 2 - joystick.offsetWidth / 2;
+          const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+
+          if (distance > radius) {
+            const angle = Math.atan2(deltaY, deltaX);
+            deltaX = Math.cos(angle) * radius;
+            deltaY = Math.sin(angle) * radius;
+          }
+
+          // Move joystick
+          joystick.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
+
+          // Move camera based on joystick position
+          const moveX = deltaX / radius;
+          const moveZ = deltaY / radius;
+          const position = camera.getAttribute("position");
+          position.x += moveX * 0.1;
+          position.z += moveZ * 0.1;
+          camera.setAttribute("position", position);
+
+          e.preventDefault();
+        });
+
+        document.addEventListener("touchend", () => {
+          isDragging = false;
+          joystick.style.transform = "translate(0px, 0px)";
+        });
+      });
+      // Initialize user info
     </script>
   </body>
 </html>
