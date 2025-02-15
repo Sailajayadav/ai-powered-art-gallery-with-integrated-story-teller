@@ -138,11 +138,7 @@
     WASD to Move • Mouse to Look • Hover for Details
   </div>
   <!-- Add these elements after your a-scene -->
-  <div class="mobile-controls">
-    <div class="touch-button" id="rotate-left">↺</div>
-    <div class="touch-button" id="move-forward">↑</div>
-    <div class="touch-button" id="rotate-right">↻</div>
-  </div>
+  
   <a-scene optimize-performance stats>
     <a-assets>
       <audio id="ambient-sound" src="static/sounds/ambient.mp3" autoplay loop></audio>
@@ -305,9 +301,7 @@
       
     </a-entity>
     <!-- Second set of Wall Lighting -->
-    <a-entity>
-      <!-- Left wall lights -->
-    </a-entity>
+    
     <!-- Decorative Info Display -->
     <a-entity position="0 5.5 0">
       <!-- Background Panel -->
@@ -462,23 +456,6 @@
         <a-plane position="0 0.01 -25" rotation="-90 0 0" width="3" height="50" color="#916f3d"
           material="shader: flat; metalness: 0.2; roughness: 0.8; emissive: #916f3d; emissiveIntensity: 0.1"
           segments-height="1" segments-width="1"></a-plane>
-      </a-entity>
-
-      <!-- Path Lighting -->
-      <!-- Center path lights -->
-      <a-entity>
-
-      </a-entity>
-
-      <!-- Left path lights -->
-      <a-entity>
-
-      </a-entity>
-
-      <!-- Right path lights -->
-      <a-entity>
-
-
       </a-entity>
     </a-entity>
 
