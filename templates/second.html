@@ -315,12 +315,10 @@
         material="metalness: 0.6; roughness: 0.4"></a-box>
 
       <!-- Time Display -->
-      <a-text value="2025-02-15 13:13:35 UTC" position="0 0.2 0.2" align="center" color="#e4c07f"
-        scale="0.8 0.8 0.8"></a-text>
+      
 
       <!-- User Display -->
-      <a-text value="Welcome, Krizzna69" position="0 -0.2 0.2" align="center" color="#e4c07f"
-        scale="0.8 0.8 0.8"></a-text>
+     
     </a-entity>
     <a-entity position="0 0 -10">
       <a-entity position="-6 3 0">
@@ -695,34 +693,6 @@
       });
 
       // Touch move event
-      document.addEventListener("touchmove", function (e) {
-        if (!touchStartX || !touchStartY) {
-          return;
-        }
-
-        let touchEndX = e.touches[0].clientX;
-        let touchEndY = e.touches[0].clientY;
-
-        let deltaX = touchStartX - touchEndX;
-        let deltaY = touchStartY - touchEndY;
-
-        // Get current camera position
-        let position = camera.getAttribute("position");
-
-        // Movement speed
-        const moveSpeed = 0.1;
-
-        // Update camera position based on touch movement
-        position.x -= deltaX * moveSpeed;
-        position.z -= deltaY * moveSpeed;
-
-        // Apply new position
-        camera.setAttribute("position", position);
-
-        // Update touch start position
-        touchStartX = touchEndX;
-        touchStartY = touchEndY;
-      });
 
       // Touch end event
       document.addEventListener("touchend", function () {
