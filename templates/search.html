@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Search Art</title>
+    <style>
+      /* Add your CSS styles here */
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+        background-color: #f9f9f9;
+      }
+      .container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #fff;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      }
+      h1 {
+        text-align: center;
+        color: #333;
+      }
+      #search-bar {
+        width: 100%;
+        padding: 12px;
+        font-size: 16px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        box-sizing: border-box;
+        margin-bottom: 20px;
+      }
+      button {
+        padding: 12px 20px;
+        background-color: #4285f4;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+      }
+      button:hover {
+        background-color: #357ae8;
+      }
+      .results {
+        margin-top: 30px;
+      }
+      .art-item {
+        border: 1px solid #ddd;
+        padding: 15px;
+        margin-bottom: 15px;
+        border-radius: 4px;
+        background-color: #fff;
+      }
+      .art-item img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 4px;
+      }
+      .art-item h2 {
+        margin-top: 0;
+        color: #333;
+      }
+      .art-item p {
+        color: #555;
+      }
+      .error-message {
+        color: red;
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Search Art</h1>
+      <form id="search-form" method="post" action="/search">
+        <input
+          type="text"
+          id="search-bar"
+          name="query"
+          placeholder="Search for art or artist"
+          required
+        />
+        <button type="submit">Search</button>
+      </form>
+
+      <div class="results" id="results">
+        <!-- Search results will be displayed here -->
+      </div>
+    </div>
+
+    <script>
+      document
+        .getElementById("search-form")
+        .addEventListener("submit", function (event) {
+          event.preventDefault(); // Prevent the default form submission
+
+          const query = document.getElementById("search-bar").value.trim();
+          const resultsDiv = document.getElementById("results");
+
+          if (query === "") {
+            resultsDiv.innerHTML =
+              '<p class="error-message">Please enter a search query.</p>';
+            return;
+          }
+
+          // Clear previous results
+          resultsDiv.innerHTML = "<p>Searching...</p>";
+
+          // Send a POST request to the server
+          fetch("http://127.0.0.1:5000/search", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/x-www-form-urlencoded",
+            },
+            body: `query=${encodeURIComponent(query)}`,
+          })
+            .then((response) => {
+              if (!response.ok) {
+                return response.json().then((errData) => {
+                  throw new Error(errData.error || "An error occurred.");
+                });
+              }
+              return response.json();
+            })
+            .then((data) => {
+              // Clear the 'Searching...' message
+              resultsDiv.innerHTML = "";
+
+              if (data.error) {
+                resultsDiv.innerHTML = `<p class="error-message">${data.error}</p>`;
+                return;
+              }
+
+              if (data.length === 0) {
+                resultsDiv.innerHTML = "<p>No results found.</p>";
+                return;
+              }
+
+              // Display the search results
+              let html = "";
+              data.forEach((artwork) => {
+                html += `
+                            <div class="art-item">
+                                <h2>${artwork.art_name}</h2>
+                                <p>Artist: ${artwork.artist_name}</p>
+                                <img src="${artwork.image_url}" alt="${artwork.art_name}">
+                            </div>
+                        `;
+              });
+              resultsDiv.innerHTML = html;
+            })
+            .catch((error) => {
+              console.error("Error:", error);
+              resultsDiv.innerHTML = `<p class="error-message">${error.message}</p>`;
+            });
+        });
+    </script>
+  </body>
+</html>

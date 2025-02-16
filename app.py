@@ -3,7 +3,7 @@ import numpy as np
 from flask import Flask, render_template, request, jsonify
 import os
 import base64
-
+import pandas as pd
 app = Flask(__name__)
 
 # ---------------------- Helper Functions ----------------------
@@ -110,6 +110,36 @@ def upload_image():
             })
 
     return render_template("index.html")
+
+@app.route("/search", methods=["GET", "POST"])
+def search():
+    """Handle search queries and return matching artworks."""
+    if request.method == "POST":
+        query = request.form.get("query", "").strip().lower()
+        if not query:
+            return jsonify({"error": "No search query provided."}), 400
+
+        BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+        excel_path = os.path.join(BASE_DIR, 'static', 'data', 'artwork.xlsx')
+        if not os.path.exists(excel_path):
+            return jsonify({"error": "Artworks data not found."}), 404
+
+        df = pd.read_excel(excel_path)
+        results = df[
+            df['art_name'].str.lower().str.contains(query) |
+            df['artist_name'].str.lower().str.contains(query)
+        ]
+
+        response = []
+        for _, row in results.iterrows():
+            response.append({
+                "art_name": row['art_name'],
+                "artist_name": row['artist_name'],
+                "image_url": row['image_url']
+            })
+
+        return jsonify(response)
+    return render_template("search.html")
 
 if __name__ == "__main__":
     app.run(debug=True)
