@@ -67,9 +67,6 @@ def home():
 @app.route('/second')
 def second():
     return render_template('second.html')
-@app.route('/third')
-def third():
-    return render_template('room2.html')
 @app.route("/index", methods=["GET", "POST"])
 def upload_image():
     """Handle image upload and similarity search."""
