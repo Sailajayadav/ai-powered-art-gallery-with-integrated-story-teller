@@ -656,11 +656,7 @@
     <a-entity position="0 0 -45"> </a-entity>
   </a-scene>
 
-  <div id="popup">
-    <h2 id="popup-head"></h2>
-    <p id="popup-text"></p>
-  </div>
-
+ 
   <div class="audio-toggle">
     <i class="fas fa-volume-up"></i>
   </div>
@@ -796,9 +792,7 @@
 
     // Audio toggle functionality
     const audioToggle = document.querySelector(".audio-toggle");
-    const popup = document.getElementById("popup");
-    const popupHead = document.getElementById("popup-head");
-    const popupText = document.getElementById("popup-text");
+   
 
     audioToggle.addEventListener("click", () => {
       isAudioEnabled = !isAudioEnabled;
@@ -844,9 +838,7 @@
         if (!info) return;
 
         // Display popup
-        popup.style.display = "block";
-        popupHead.textContent = info.title;
-        popupText.textContent = info.description;
+       
 
         // Speak the information
         if (isAudioEnabled) {
