@@ -18,41 +18,47 @@
             border-radius: 50%;
             cursor: pointer;
             display: block;
+            z-index: 1000; /* Ensure the tooltip is on top */
         }
     </style>
 </head>
 <body>
 
-    <!-- Main content section -->   
+    <!-- Main content section -->
     <div class="container">
         <nav class="bg-[#4A1A1A] p-4 fixed w-full top-0 left-0 z-50 shadow-lg">
             <div class="container mx-auto flex justify-between items-center">
                 <a href="{{ url_for('home') }}" class="text-[#FFD700] text-2xl font-bold tracking-widest">🎨 Art Gallery</a>
                 <div class="flex space-x-4">
                     <!-- Existing Links -->
-                    <a href="{{ url_for('upload_image') }}" 
+                    <a href="{{ url_for('upload_image') }}"
                        class="bg-[#D4AF37] text-black font-semibold px-4 py-2 rounded-lg shadow-md transition duration-300 transform hover:bg-[#B8860B] hover:scale-105 hover:shadow-lg">
                        🔍 Search By Image
                     </a>
-                    <a href="{{ url_for('second') }}" 
+                    <a href="{{ url_for('second') }}"
                        class="bg-[#D4AF37] text-black font-semibold px-4 py-2 rounded-lg shadow-md transition duration-300 transform hover:bg-[#B8860B] hover:scale-105 hover:shadow-lg">
                        🏛 View 3D Art Gallery
                     </a>
-                    <a href="https://kidcanvas-xe05.onrender.com/home "
-                    class="bg-[#D4AF37] text-black font-semibold px-4 py-2 rounded-lg shadow-md transition duration-300 transform hover:bg-[#B8860B] hover:scale-105 hover:shadow-lg">
-                    🎨 Try Kids Zone
-                 </a>
-        
+                    <a href="https://kidcanvas-xe05.onrender.com/home"
+                       class="bg-[#D4AF37] text-black font-semibold px-4 py-2 rounded-lg shadow-md transition duration-300 transform hover:bg-[#B8860B] hover:scale-105 hover:shadow-lg">
+                       🎨 Try Kids Zone
+                    </a>
+
+                    <!-- Upload Button -->
+                    <a href="{{ url_for('upload') }}"
+                       class="bg-[#D4AF37] text-black font-semibold px-4 py-2 rounded-lg shadow-md transition duration-300 transform hover:bg-[#B8860B] hover:scale-105 hover:shadow-lg">
+                       📤 Upload
+                    </a>
+
                     <!-- Search Form -->
-                    <a href="{{ url_for('search') }}" 
-               class="bg-[#D4AF37] text-black font-semibold px-4 py-2 rounded-lg shadow-md transition duration-300 transform hover:bg-[#B8860B] hover:scale-105 hover:shadow-lg flex items-center">
-                🔍 <!-- Magnifying Glass icon -->
-            </a>
+                    <a href="{{ url_for('search') }}"
+                       class="bg-[#D4AF37] text-black font-semibold px-4 py-2 rounded-lg shadow-md transition duration-300 transform hover:bg-[#B8860B] hover:scale-105 hover:shadow-lg flex items-center">
+                        🔍 <!-- Magnifying Glass icon -->
+                    </a>
                 </div>
             </div>
         </nav>
 
-        
         <!-- Art cards section -->
         <div class="art-cards" id="artCardsContainer">
             <!-- Cards will be dynamically generated here -->
@@ -72,13 +78,11 @@
 
    <!-- Chatbot Popup -->
    <div id="chatbotPopup" class="fixed bottom-5 right-6 bg-gradient-to-br from-brown-700 to-yellow-600 p-6 rounded-3xl shadow-2xl hidden" style="width: 350px; height: 500px;">
-    
+
     <!-- Chatbot Header -->
     <div class="text-center text-white font-bold text-xl p-2 border-b-2 border-white bg-[#8B4513] rounded-t-xl">
         Hi..How can Help you..!
     </div>
-    
-    
 
     <!-- Chatbot Content -->
     <div class="chatbot-body" style="height: calc(100% - 40px); background: rgba(255, 255, 255, 0.7); border-radius: 15px;">
@@ -92,17 +96,14 @@
         </div>
     </div>
 
-</div>
-
     <!-- Tooltip for Chatbot -->
     <div id="chatbotTooltip">Hi, I am chatbot!</div>
 
     <!-- Circular Chatbot button -->
-    <button id="chatbotButton" 
+    <button id="chatbotButton"
         class="fixed bottom-6 right-6 bg-[#8B4513] text-white font-semibold rounded-full p-4 shadow-lg transition duration-300 transform hover:bg-[#A0522D] hover:scale-110 hover:shadow-xl"
         onclick="toggleChatbot()">💬
     </button>
-
 
     <!-- Link to JavaScript file -->
     <script src="{{ url_for('static', filename='js/scripts.js') }}"></script>
@@ -172,7 +173,6 @@
             document.getElementById("chatbotPopup").style.display = "none";
             document.getElementById("chatbotTooltip").style.display = "block"; // Show tooltip again
         };
-
     </script>
 
 </body>
