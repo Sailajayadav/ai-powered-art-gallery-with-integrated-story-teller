@@ -6,9 +6,9 @@ import base64
 import pandas as pd
 import cv2
 import numpy as np
-from transformers import pipeline
-from transformers import pipeline, ViTFeatureExtractor, ViTForImageClassification, BlipProcessor, BlipForConditionalGeneration
-import torch
+#from transformers import pipeline
+#from transformers import pipeline, ViTFeatureExtractor, ViTForImageClassification, BlipProcessor, BlipForConditionalGeneration
+#import torch
 from PIL import Image
 import requests
 # ... (keep all your existing imports)
@@ -17,12 +17,12 @@ import google.generativeai as genai
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'  # Replace with your actual secret key
 
-def zero_shot_classification(text, candidate_labels):
-    classifier = pipeline("zero-shot-classification", model="facebook/bart-large-mnli")
-    result = classifier(text, candidate_labels)
-    return result
+#def zero_shot_classification(text, candidate_labels):
+#    classifier = pipeline("zero-shot-classification", model="facebook/bart-large-mnli")
+#    result = classifier(text, candidate_labels)
+#    return result
 
-class ZeroShotImageClassifier:
+'''class ZeroShotImageClassifier:
     def __init__(self, model_name="openai/clip-vit-base-patch32"):
         """
         Initialize the zero-shot image classifier using a pre-trained CLIP model.
@@ -65,8 +65,9 @@ def analyze_image(image_path):
     inputs = processor(image, return_tensors="pt")
     out = model.generate(**inputs, max_length=50)
     caption = processor.decode(out[0], skip_special_tokens=True)
-
     return caption
+    '''
+
 # Configuration
 UPLOAD_FOLDER = os.path.join('static', 'images', 'uploaded_images')
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
