@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>AR Museum</title>
+    <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@aframe-3.3.3/aframe/build/aframe-ar.js"></script>
+    <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+        }
+        #ar-container {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+        }
+        .ar-button {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 10;
+        }
+    </style>
+</head>
+<body>
+    <div id="ar-container">
+        <a-scene embedded arjs>
+            <!-- Museum environment -->
+            <a-assets>
+                <img id="floor-texture" src="{{ url_for('static', filename='images/museum/floor.jpg') }}" alt="Floor Texture">
+                <img id="wall-texture" src="{{ url_for('static', filename='images/museum/wall.jpg') }}" alt="Wall Texture">
+                <img id="frame-texture" src="{{ url_for('static', filename='images/museum/frame.jpg') }}" alt="Frame Texture">
+            </a-assets>
+
+            <!-- Floor -->
+            <a-plane src="#floor-texture" rotation="-90 0 0" width="100" height="100" position="0 0 0"></a-plane>
+
+            <!-- Walls -->
+            <a-box src="#wall-texture" width="100" height="10" depth="100" position="0 5 0"></a-box>
+            <a-box src="#wall-texture" width="100" height="10" depth="100" rotation="0 90 0" position="0 5 0"></a-box>
+
+            <!-- Artworks -->
+            {% for image in images %}
+                <a-entity
+                    position="{{ (loop.index0 + 1) * 5 }} 5 {{ (loop.index0 + 1) * 2 }}"
+                    rotation="0 {{ 45 * loop.index0 }} 0">
+                    <a-image src="{{ url_for('static', filename=image) }}" width="3" height="3" ></a-image>
+                    <a-plane src="#frame-texture" width="3.2" height="3.2" position="0 0 0" rotation="0 0 0"></a-plane>
+                </a-entity>
+            {% endfor %}
+
+            <!-- Lighting -->
+            <a-light type="ambient" color="#ffffff"></a-light>
+            <a-light type="point" position="0 10 0" intensity="0.5"></a-light>
+
+            <a-entity camera></a-entity>
+        </a-scene>
+    </div>
+    <div class="ar-button">
+        <a href="{{ url_for('upload_image') }}" class="bg-[#D4AF37] text-black font-semibold px-4 py-2 rounded-lg shadow-md transition duration-300 transform hover:bg-[#B8860B] hover:scale-105 hover:shadow-lg">
+            Upload More Images
+        </a>
+    </div>
+</body>
+</html>
