@@ -13,7 +13,6 @@ from PIL import Image
 import requests
 # ... (keep all your existing imports)
 import google.generativeai as genai
-from datetime import datetime
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'  # Replace with your actual secret key
