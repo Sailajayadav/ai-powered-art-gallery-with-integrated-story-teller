@@ -13,9 +13,83 @@ from PIL import Image
 import requests
 # ... (keep all your existing imports)
 import google.generativeai as genai
-
+import os
+import sqlite3
+from datetime import datetime
+from flask import Flask, render_template, request, redirect, url_for, flash, session
+from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.utils import secure_filename
+from functools import wraps
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'  # Replace with your actual secret key
+
+def get_db_connection():
+    conn = sqlite3.connect('virtual_gallery.db')
+    conn.row_factory = sqlite3.Row
+    return conn
+
+def init_db():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    # Create users table
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT UNIQUE NOT NULL,
+        email TEXT UNIQUE NOT NULL,
+        password TEXT NOT NULL,
+        is_admin INTEGER DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+    ''')
+    
+    # Create images table
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS images (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        filename TEXT NOT NULL,
+        user_id INTEGER,
+        uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users (id)
+    )
+    ''')
+    
+    # Check if admin account exists, if not create it
+    cursor.execute("SELECT * FROM users WHERE username = 'admin' AND is_admin = 1")
+    admin = cursor.fetchone()
+    
+    if not admin:
+        admin_password = generate_password_hash('admin123')
+        cursor.execute(
+            "INSERT INTO users (username, email, password, is_admin) VALUES (?, ?, ?, ?)",
+            ('admin', 'admin@virtualgallery.com', admin_password, 1)
+        )
+    
+    conn.commit()
+    conn.close()
+
+# Call init_db() at startup
+with app.app_context():
+    init_db()
+
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'user_id' not in session:
+            flash('Please log in to access this page', 'login_error')
+            return redirect(url_for('login'))
+        return f(*args, **kwargs)
+    return decorated_function
+
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'is_admin' not in session or not session['is_admin']:
+            flash('Admin access required', 'admin_error')
+            return redirect(url_for('login', tab='admin'))
+        return f(*args, **kwargs)
+    return decorated_function
 
 #def zero_shot_classification(text, candidate_labels):
 #    classifier = pipeline("zero-shot-classification", model="facebook/bart-large-mnli")
@@ -129,11 +203,105 @@ def image_to_base64(image_path):
 
 # ---------------------- Routes ----------------------
 
-@app.route("/")
+@app.route("/", methods=["GET", "POST"])
 def signup():
-    """Render the Sign-Up Page."""
-    return render_template("signup.html")
-
+    """Render the login/sign-up page and handle authentication."""
+    if request.method == "POST":
+        form_type = request.form.get('form_type', '')
+        
+        # Handle User Registration
+        if form_type == 'register':
+            username = request.form.get('username')
+            email = request.form.get('email')
+            password = request.form.get('password')
+            confirm_password = request.form.get('confirm_password')
+            
+            # Validate input
+            if not all([username, email, password, confirm_password]):
+                flash('All fields are required', 'register_error')
+                return redirect(url_for('signup', tab='register'))
+                
+            if password != confirm_password:
+                flash('Passwords do not match', 'register_error')
+                return redirect(url_for('signup', tab='register'))
+            
+            # Check if user already exists
+            conn = get_db_connection()
+            existing_user = conn.execute('SELECT * FROM users WHERE username = ? OR email = ?', 
+                                      (username, email)).fetchone()
+            
+            if existing_user:
+                conn.close()
+                flash('Username or email already exists', 'register_error')
+                return redirect(url_for('signup', tab='register'))
+            
+            # Create new user
+            hashed_password = generate_password_hash(password)
+            conn.execute('INSERT INTO users (username, email, password) VALUES (?, ?, ?)',
+                      (username, email, hashed_password))
+            conn.commit()
+            
+            # Get the newly created user
+            user = conn.execute('SELECT * FROM users WHERE username = ?', (username,)).fetchone()
+            conn.close()
+            
+            # Log the user in
+            session['user_id'] = user['id']
+            session['username'] = user['username']
+            session['is_admin'] = user['is_admin']
+            
+            flash('Account created successfully!', 'success')
+            return redirect(url_for('home'))
+            
+        # Handle User Login
+        elif form_type == 'login':
+            username = request.form.get('username')
+            password = request.form.get('password')
+            
+            if not all([username, password]):
+                flash('Username and password are required', 'login_error')
+                return redirect(url_for('signup', tab='login'))
+            
+            conn = get_db_connection()
+            user = conn.execute('SELECT * FROM users WHERE username = ?', (username,)).fetchone()
+            conn.close()
+            
+            if user and check_password_hash(user['password'], password):
+                session['user_id'] = user['id']
+                session['username'] = user['username']
+                session['is_admin'] = user['is_admin']
+                
+                return redirect(url_for('home'))
+            else:
+                flash('Invalid username or password', 'login_error')
+                return redirect(url_for('signup', tab='login'))
+                
+        # Handle Admin Login
+        elif form_type == 'admin':
+            username = request.form.get('username')
+            password = request.form.get('password')
+            
+            if not all([username, password]):
+                flash('Username and password are required', 'admin_error')
+                return redirect(url_for('signup', tab='admin'))
+            
+            conn = get_db_connection()
+            admin = conn.execute('SELECT * FROM users WHERE username = ? AND is_admin = 1', 
+                              (username,)).fetchone()
+            conn.close()
+            
+            if admin and check_password_hash(admin['password'], password):
+                session['user_id'] = admin['id']
+                session['username'] = admin['username']
+                session['is_admin'] = admin['is_admin']
+                
+                return redirect(url_for('home'))
+            else:
+                flash('Invalid admin credentials', 'admin_error')
+                return redirect(url_for('signup', tab='admin'))
+    
+    # GET request - render the login/signup page
+    return render_template("signup.html")  # Renamed from signup.html to login.html
 @app.route('/test')
 def test():
     """Render the Test Page."""
