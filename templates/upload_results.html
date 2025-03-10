@@ -118,7 +118,7 @@
             {% for image in images %}
                 <div class="image-item">
                     <div class="frame"></div>
-                    <img src="{{ image }}" alt="Uploaded Image">
+                    <img src="{{ url_for('static', filename='images/uploaded_images/' + image) }}" alt="Uploaded Image">
                     <h2>{{ image }}</h2>
                 </div>
             {% endfor %}

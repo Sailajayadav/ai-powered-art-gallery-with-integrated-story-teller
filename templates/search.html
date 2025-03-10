@@ -87,63 +87,269 @@
             color: red;
             text-align: center;
         }
+        .search-options {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .search-option {
+            padding: 8px 15px;
+            background-color: #4A1A1A;
+            color: #EAE0C8;
+            border: 1px solid #D4AF37;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .search-option.active {
+            background-color: #6A2A2A;
+            border-color: #FFD700;
+        }
+        .search-inputs {
+            margin-bottom: 20px;
+        }
+        .search-input {
+            display: none;
+        }
+        .search-input.active {
+            display: block;
+        }
+        .file-input-wrapper {
+            position: relative;
+            width: 100%;
+            height: 120px;
+            border: 2px dashed #D4AF37;
+            border-radius: 6px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            overflow: hidden;
+        }
+        .file-input-wrapper:hover {
+            border-color: #FFD700;
+            background-color: rgba(255, 215, 0, 0.1);
+        }
+        #file-input {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+        .upload-icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            color: #D4AF37;
+        }
+        .upload-text {
+            font-size: 1rem;
+            color: #EAE0C8;
+        }
+        #image-preview {
+            max-width: 100%;
+            max-height: 200px;
+            margin: 10px 0;
+            border-radius: 6px;
+            display: none;
+        }
+        .preview-container {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .similar-result {
+            margin-top: 30px;
+            text-align: center;
+        }
+        .similar-result img {
+            max-width: 300px;
+            margin: 0 auto;
+            border: 2px solid #FFD700;
+            border-radius: 6px;
+        }
+        .similarity-score {
+            margin-top: 10px;
+            font-size: 1.1rem;
+            color: #FFD700;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Search Art</h1>
-        <form id="search-form" method="post" action="/search">
-            <input type="text" id="search-bar" name="query" placeholder="Search for art or artist" required />
-            <button type="submit">Search</button>
+        
+        <div class="search-options">
+            <div class="search-option active" data-option="text">Search by Text</div>
+            <div class="search-option" data-option="image">Search by Image</div>
+        </div>
+        
+        <form id="search-form" enctype="multipart/form-data">
+            <!-- Text search input -->
+            <div class="search-input active" id="text-search">
+                <input type="text" id="search-bar" name="query" placeholder="Search for art or artist" />
+            </div>
+            
+            <!-- Image upload input -->
+            <div class="search-input" id="image-search">
+                <div class="file-input-wrapper">
+                    <input type="file" id="file-input" name="file" accept="image/*" />
+                    <div class="upload-icon">📷</div>
+                    <div class="upload-text">Click to upload an image or drag and drop</div>
+                </div>
+                <div class="preview-container">
+                    <img id="image-preview" src="#" alt="Preview" />
+                </div>
+            </div>
+            
+            <button type="submit" id="search-button">Search</button>
         </form>
-        <div class="results" id="results"></div>
+        
+        <div id="results" class="results"></div>
     </div>
 
     <script>
+        // Toggle between search options
+        document.querySelectorAll('.search-option').forEach(option => {
+            option.addEventListener('click', function() {
+                // Remove active class from all options
+                document.querySelectorAll('.search-option').forEach(opt => {
+                    opt.classList.remove('active');
+                });
+                
+                // Add active class to clicked option
+                this.classList.add('active');
+                
+                // Show corresponding input
+                const optionType = this.getAttribute('data-option');
+                document.querySelectorAll('.search-input').forEach(input => {
+                    input.classList.remove('active');
+                });
+                document.getElementById(`${optionType}-search`).classList.add('active');
+            });
+        });
+        
+        // Preview uploaded image
+        document.getElementById('file-input').addEventListener('change', function(event) {
+            const imagePreview = document.getElementById('image-preview');
+            const file = event.target.files[0];
+            
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    imagePreview.src = e.target.result;
+                    imagePreview.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            } else {
+                imagePreview.style.display = 'none';
+            }
+        });
+        
+        // Handle form submission
         document.getElementById("search-form").addEventListener("submit", function(event) {
             event.preventDefault();
-            const query = document.getElementById("search-bar").value.trim();
             const resultsDiv = document.getElementById("results");
-
-            if (query === "") {
-                resultsDiv.innerHTML = '<p class="error-message">Please enter a search query.</p>';
-                return;
-            }
-
             resultsDiv.innerHTML = "<p>Searching...</p>";
-            fetch("https://virtual-art-gallery-wsth.onrender.com/search", {
-                method: "POST",
-                headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                body: `query=${encodeURIComponent(query)}`,
-            })
-            .then(response => response.json())
-            .then(data => {
-                resultsDiv.innerHTML = "";
-                if (data.error) {
-                    resultsDiv.innerHTML = `<p class="error-message">${data.error}</p>`;
+            
+            // Determine which search type is active
+            const activeSearchType = document.querySelector('.search-option.active').getAttribute('data-option');
+            
+            if (activeSearchType === 'text') {
+                // Handle text search
+                const query = document.getElementById("search-bar").value.trim();
+                
+                if (query === "") {
+                    resultsDiv.innerHTML = '<p class="error-message">Please enter a search query.</p>';
                     return;
                 }
-                if (data.length === 0) {
-                    resultsDiv.innerHTML = "<p>No results found.</p>";
+                
+                fetch("http://127.0.0.1:5000/search", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                    body: `query=${encodeURIComponent(query)}`,
+                })
+                .then(response => response.json())
+                .then(data => {
+                    resultsDiv.innerHTML = "";
+                    if (data.error) {
+                        resultsDiv.innerHTML = `<p class="error-message">${data.error}</p>`;
+                        return;
+                    }
+                    if (data.length === 0) {
+                        resultsDiv.innerHTML = "<p>No results found.</p>";
+                        return;
+                    }
+                    let html = `<div class="results">`;
+                    data.forEach(artwork => {
+                        html += `
+                            <div class="art-item">
+                                <h2>${artwork.art_name}</h2>
+                                <p>Artist: ${artwork.artist_name}</p>
+                                <img src="${artwork.image_url}" alt="${artwork.art_name}">
+                            </div>
+                        `;
+                    });
+                    html += `</div>`;
+                    resultsDiv.innerHTML = html;
+                })
+                .catch(error => {
+                    console.error("Error:", error);
+                    resultsDiv.innerHTML = `<p class="error-message">${error.message}</p>`;
+                });
+            } else {
+                // Handle image search
+                const fileInput = document.getElementById('file-input');
+                const file = fileInput.files[0];
+                
+                if (!file) {
+                    resultsDiv.innerHTML = '<p class="error-message">Please select an image to upload.</p>';
                     return;
                 }
-                let html = `<div class="results">`;
-                data.forEach(artwork => {
-                    html += `
-                        <div class="art-item">
-                            <h2>${artwork.art_name}</h2>
-                            <p>Artist: ${artwork.artist_name}</p>
-                            <img src="${artwork.image_url}" alt="${artwork.art_name}">
+                
+                const formData = new FormData();
+                formData.append('file', file);
+                
+                fetch("http://127.0.0.1:5000/upload_image", {
+                    method: "POST",
+                    body: formData,
+                })
+                .then(response => response.json())
+                .then(data => {
+                    resultsDiv.innerHTML = "";
+                    
+                    if (data.error) {
+                        resultsDiv.innerHTML = `<p class="error-message">${data.error}</p>`;
+                        return;
+                    }
+                    
+                    if (data.below_threshold) {
+                        resultsDiv.innerHTML = `
+                            <div class="similar-result">
+                                <p>No similar artwork found (similarity score: ${data.similarity_score.toFixed(2)})</p>
+                            </div>
+                        `;
+                        return;
+                    }
+                    
+                    resultsDiv.innerHTML = `
+                        <div class="similar-result">
+                            <h2>Most Similar Artwork</h2>
+                            <img src="${data.most_similar_image}" alt="Similar Artwork">
+                            <p class="similarity-score">Similarity Score: ${data.similarity_score.toFixed(2)}</p>
                         </div>
                     `;
+                })
+                .catch(error => {
+                    console.error("Error:", error);
+                    resultsDiv.innerHTML = `<p class="error-message">${error.message}</p>`;
                 });
-                html += `</div>`;
-                resultsDiv.innerHTML = html;
-            })
-            .catch(error => {
-                console.error("Error:", error);
-                resultsDiv.innerHTML = `<p class="error-message">${error.message}</p>`;
-            });
+            }
         });
     </script>
 </body>

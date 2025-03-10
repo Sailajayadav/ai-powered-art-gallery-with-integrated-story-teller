@@ -30,18 +30,18 @@
             <div class="container mx-auto flex justify-between items-center">
                 <a href="{{ url_for('home') }}" class="text-[#FFD700] text-2xl font-bold tracking-widest">🎨 Art Gallery</a>
                 <div class="flex space-x-4">
+                    <a href="{{ url_for('search') }}"
+                    class="bg-[#D4AF37] text-black font-semibold px-4 py-2 rounded-lg shadow-md transition duration-300 transform hover:bg-[#B8860B] hover:scale-105 hover:shadow-lg flex items-center">
+                     🔍 Search<!-- Magnifying Glass icon -->
+                 </a>
                     <!-- Existing Links -->
-                    <a href="{{ url_for('upload_image') }}"
-                       class="bg-[#D4AF37] text-black font-semibold px-4 py-2 rounded-lg shadow-md transition duration-300 transform hover:bg-[#B8860B] hover:scale-105 hover:shadow-lg">
-                       🔍 Search By Image
-                    </a>
                     <a href="{{ url_for('second') }}"
                        class="bg-[#D4AF37] text-black font-semibold px-4 py-2 rounded-lg shadow-md transition duration-300 transform hover:bg-[#B8860B] hover:scale-105 hover:shadow-lg">
-                       🏛 View 3D Art Gallery
+                       🏛 3D Art Gallery
                     </a>
                     <a href="https://kidcanvas-xe05.onrender.com/home"
                        class="bg-[#D4AF37] text-black font-semibold px-4 py-2 rounded-lg shadow-md transition duration-300 transform hover:bg-[#B8860B] hover:scale-105 hover:shadow-lg">
-                       🎨 Try Kids Zone
+                       🎨 Kids Zone
                     </a>
 
                     <!-- Upload Button -->
@@ -51,10 +51,7 @@
                     </a>
 
                     <!-- Search Form -->
-                    <a href="{{ url_for('search') }}"
-                       class="bg-[#D4AF37] text-black font-semibold px-4 py-2 rounded-lg shadow-md transition duration-300 transform hover:bg-[#B8860B] hover:scale-105 hover:shadow-lg flex items-center">
-                        🔍 <!-- Magnifying Glass icon -->
-                    </a>
+
                 </div>
             </div>
         </nav>

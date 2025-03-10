@@ -51,7 +51,7 @@
             <img id="floor" src="https://cdn.glitch.global/6e8d47dd-6b91-4779-9fee-b827e4790e85/marble-floor.jpg?v=1677679019161" />
             <img id="wall" src="https://cdn.glitch.global/6e8d47dd-6b91-4779-9fee-b827e4790e85/wall-texture.jpg?v=1677679019161" />
             {% for image in images %}
-            <img id="artwork-{{ loop.index }}" src="/{{ image }}" />
+            <img id="artwork-{{ loop.index }}" src="static/{{image}}" />
             {% endfor %}
         </a-assets>
 
@@ -163,6 +163,27 @@
                     </a-box>
                 </a-entity>
             {% endif %}
+            
+            {% if wall == 2 %}  {# Left wall #}
+                <a-entity
+                    position="-14.5 2.5 {{ (position * 8) - 8 }}"
+                    rotation="0 90 0">
+                    <a-image
+                        src="#artwork-{{ loop.index }}"
+                        width="7"
+                        height="7"
+                        shadow="cast: true">
+                    </a-image>
+                    <!-- Frame -->
+                    <a-box
+                        position="0 0 -0.1"
+                        width="7"
+                        height="7"
+                        depth="0.1"
+                        color="#8B4513">
+                    </a-box>
+                </a-entity>
+            {% endif %}
         {% endfor %}
 
         <!-- Lighting -->
@@ -191,6 +212,17 @@
                 <a-light type="spot"
                     position="14 4 {{ (position * 8) - 8 }}"
                     rotation="-30 -90 0"
+                    intensity="1.5"
+                    angle="30"
+                    penumbra="0.4"
+                    distance="10">
+                </a-light>
+            {% endif %}
+            
+            {% if wall == 2 %}
+                <a-light type="spot"
+                    position="-14 4 {{ (position * 8) - 8 }}"
+                    rotation="-30 90 0"
                     intensity="1.5"
                     angle="30"
                     penumbra="0.4"

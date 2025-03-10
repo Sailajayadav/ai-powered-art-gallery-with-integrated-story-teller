@@ -69,15 +69,11 @@ def analyze_image(image_path):
     '''
 
 # Configuration
-UPLOAD_FOLDER = os.path.join('static', 'images', 'uploaded_images')
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 MAX_IMAGES = 8
 
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-# Ensure the upload folder exists
-if not os.path.exists(UPLOAD_FOLDER):
-    os.makedirs(UPLOAD_FOLDER)
+
 
 def allowed_file(filename):
     """Check if the file has an allowed extension."""
@@ -89,7 +85,7 @@ def sanitize_filename(filename):
     filename = unicodedata.normalize('NFKD', filename).encode('ascii', 'ignore').decode('utf-8')
     return secure_filename(filename)
 # Add Gemini configuration
-GOOGLE_API_KEY = 'AIzaSyDgnmM1B99dEkNh07E9JmMl8L1wSwYDg4k'
+GOOGLE_API_KEY = 'AIzaSyDQZpVOrAyyyY1qE3-bWNKZPPPHM2zxAxQ'
 genai.configure(api_key=GOOGLE_API_KEY)
 model = genai.GenerativeModel('gemini-2.0-flash')
 
@@ -138,6 +134,10 @@ def signup():
     """Render the Sign-Up Page."""
     return render_template("signup.html")
 
+@app.route('/test')
+def test():
+    """Render the Test Page."""
+    return render_template('index1.html')
 @app.route("/3d")
 def Threed():
     """Render the 3D Page."""
@@ -154,7 +154,7 @@ def second():
     return render_template('second.html')
 
 @app.route("/index", methods=["GET", "POST"])
-def upload_image():
+def upload_images():
     """Handle image upload and similarity search."""
     if request.method == "POST":
         uploaded_file = request.files.get("file")
@@ -173,7 +173,7 @@ def upload_image():
                 uploaded_image_data, dataset_image_paths
             )
             
-            similarity_threshold = 0.5  # Cosine similarity threshold
+            similarity_threshold = 1 # Cosine similarity threshold
             if similarity_score < similarity_threshold:
                 return jsonify({
                     "below_threshold": True,
@@ -213,8 +213,143 @@ def search():
         ]
 
         return jsonify(response)
-
     return render_template("search.html")
+    
+@app.route('/upload_image', methods=['GET', 'POST'])
+def upload_image():
+    """Handle image upload and similarity search."""
+    if request.method == "POST":
+        uploaded_file = request.files.get("file")
+        if uploaded_file:
+            uploaded_image_data = uploaded_file.read()
+            
+            BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+            dataset_image_dir = os.path.join(BASE_DIR, 'static', 'images')
+            dataset_image_paths = [
+                os.path.join(dataset_image_dir, img)
+                for img in os.listdir(dataset_image_dir)
+                if os.path.isfile(os.path.join(dataset_image_dir, img))
+            ]
+            
+            # Get the most similar image
+            most_similar_image_path, similarity_score = find_most_similar_image(
+                uploaded_image_data, dataset_image_paths
+            )
+            
+            similarity_threshold = 1  # Adjusted threshold for better matching
+            if similarity_score < similarity_threshold:
+                return jsonify({
+                    "below_threshold": True,
+                    "similarity_score": float(similarity_score)
+                })
+
+            # Get the image file name from the path
+            image_filename = os.path.basename(most_similar_image_path)
+            
+            # Get artwork data from Excel
+            excel_path = os.path.join(BASE_DIR, 'static', 'data', 'artwork.xlsx')
+            if not os.path.exists(excel_path):
+                return jsonify({"error": "Artworks data not found."}), 404
+
+            # Read the Excel file
+            try:
+                df = pd.read_excel(excel_path)
+                
+                # Find matching artwork record based on image filename or URL
+                # Assuming the image_url column contains the filename or full path
+                # Adjust this logic based on how your Excel data is structured
+                matched_artwork = None
+                for _, row in df.iterrows():
+                    image_url = row['image_url']
+                    if image_filename in image_url or image_url in most_similar_image_path:
+                        matched_artwork = {
+                            "art_name": row['art_name'], 
+                            "artist_name": row['artist_name'], 
+                            "image_url": row['image_url']
+                        }
+                        break
+                
+                # If no match found in Excel, still return the image but with placeholder info
+                if not matched_artwork:
+                    matched_artwork = {
+                        "art_name": "Unknown Artwork", 
+                        "artist_name": "Unknown Artist", 
+                        "image_url": f"static/images/{image_filename}"
+                    }
+                
+                # Convert the image to base64 for sending to frontend
+                similar_image_base64 = image_to_base64(most_similar_image_path)
+                
+                # Return both the artwork data and the image
+                return jsonify({
+                    "artwork": matched_artwork,
+                    "most_similar_image": f"data:image/jpeg;base64,{similar_image_base64}",
+                    "similarity_score": float(similarity_score)
+                })
+                
+            except Exception as e:
+                return jsonify({
+                    "error": f"Error processing artwork data: {str(e)}"
+                }), 500
+
+        return jsonify({"error": "No file uploaded."}), 400
+        
+    return jsonify({"error": "Method not allowed."}), 405
+
+def find_most_similar_image(uploaded_image_data, dataset_image_paths):
+    """Find the most similar image in the dataset to the uploaded image."""
+    # Convert uploaded image bytes to OpenCV format
+    nparr = np.frombuffer(uploaded_image_data, np.uint8)
+    uploaded_img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+    
+    # Calculate histogram of uploaded image
+    uploaded_hist = calculate_image_histogram(uploaded_img)
+    
+    # Find most similar image
+    max_similarity = -1
+    most_similar_path = None
+    
+    for img_path in dataset_image_paths:
+        try:
+            # Read dataset image
+            dataset_img = cv2.imread(img_path)
+            if dataset_img is None:
+                continue
+                
+            # Calculate histogram of dataset image
+            dataset_hist = calculate_image_histogram(dataset_img)
+            
+            # Calculate similarity between histograms
+            similarity = cv2.compareHist(uploaded_hist, dataset_hist, cv2.HISTCMP_CORREL)
+            
+            if similarity > max_similarity:
+                max_similarity = similarity
+                most_similar_path = img_path
+        except Exception as e:
+            print(f"Error processing {img_path}: {e}")
+            continue
+    
+    return most_similar_path, max_similarity
+
+def calculate_image_histogram(img):
+    """Calculate histogram of image for comparison."""
+    # Convert to HSV for better color comparison
+    hsv_img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+    
+    # Calculate histogram
+    hist = cv2.calcHist([hsv_img], [0, 1, 2], None, [8, 8, 8], 
+                       [0, 256, 0, 256, 0, 256])
+    
+    # Normalize histogram
+    cv2.normalize(hist, hist, 0, 1.0, cv2.NORM_MINMAX)
+    
+    return hist
+
+def image_to_base64(image_path):
+    """Convert an image to base64 string."""
+    with open(image_path, "rb") as img_file:
+        return base64.b64encode(img_file.read()).decode('utf-8')
+
 
 
 
@@ -248,8 +383,6 @@ def analyze_image_with_gemini(image_path):
         response = model.generate_content([prompt, img])
         
         # Log the analysis
-        
-
 
         is_safe = response.text.upper().startswith('SAFE')
         message = response.text.split('\n')[0]
@@ -264,6 +397,11 @@ def analyze_image_with_gemini(image_path):
 @app.route("/upload", methods=["GET", "POST"])
 def upload():
     """Handle image uploads with content moderation."""
+    # Define the upload directory to match template expectations
+    UPLOAD_DIR = os.path.join(app.root_path, 'static', 'images', 'uploaded_images')
+    
+    # Ensure the directory exists
+       
     if request.method == "POST":
         if 'images' not in request.files:
             flash('No files part')
@@ -281,7 +419,10 @@ def upload():
         for file in files:
             if file and allowed_file(file.filename):
                 filename = sanitize_filename(file.filename)
-                temp_path = os.path.join(app.config['UPLOAD_FOLDER'], f'temp_{filename}')
+                
+                # Create paths with the correct directory structure
+                temp_path = os.path.join(UPLOAD_DIR, f'temp_{filename}')
+                final_path = os.path.join(UPLOAD_DIR, filename)
                 
                 # Save temporarily for analysis
                 file.save(temp_path)
@@ -291,10 +432,11 @@ def upload():
                 
                 if is_safe:
                     # Move to final location if safe
-                    final_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
                     os.rename(temp_path, final_path)
-                    relative_path = os.path.join('static','images', 'uploaded_images', filename).replace(os.sep, '/')
-                    uploaded_images.append(relative_path)
+                    
+                    # Store just the filename for template use
+                    # This matches the template's logic that extracts filename from path
+                    uploaded_images.append(filename)
                     flash(f'Image {filename} uploaded successfully')
                 else:
                     # Remove unsafe image
@@ -307,29 +449,44 @@ def upload():
         return render_template("upload_results.html", images=uploaded_images)
     
     return render_template("upload_image.html")
-# Modify your ar_museum route to include content verification
+
+
 @app.route("/ar_museum")
 def ar_museum():
     """Render the AR Museum Page with verified safe images."""
-    images_dir = os.path.join('static', 'images', 'uploaded_images')
+    # Use the absolute path for file operations
+    images_dir = os.path.join(app.root_path, 'static', 'images', 'uploaded_images')
+    
+    # Ensure the directory exists
+    os.makedirs(images_dir, exist_ok=True)
+    
     safe_images = []
     
-    # Verify all existing images
-    for img in os.listdir(images_dir):
-        if img.endswith(('.png', '.jpg', '.jpeg', '.gif')):
-            img_path = os.path.join(images_dir, img)
-            is_safe, _ = analyze_image_with_gemini(img_path)
-            
-            if is_safe:
-                relative_path = os.path.join('static','images', 'uploaded_images', img)
-                safe_images.append(relative_path)
-            else:
-                # Remove unsafe images
-                os.remove(img_path)
-                app.logger.warning(f"Removed unsafe image during verification: {img}")
-
-
-
+    try:
+        # Verify all existing images
+        for img in os.listdir(images_dir):
+            if img.endswith(('.png', '.jpg', '.jpeg', '.gif')):
+                img_path = os.path.join(images_dir, img)
+                
+                try:
+                    is_safe, message = analyze_image_with_gemini(img_path)
+                    
+                    if is_safe:
+                        # For template use, we need relative paths from static folder
+                        relative_path = os.path.join('images', 'uploaded_images', img)
+                        safe_images.append(relative_path)
+                    else:
+                        # Remove unsafe images
+                        os.remove(img_path)
+                        app.logger.warning(f"Removed unsafe image during verification: {img} - Reason: {message}")
+                except Exception as e:
+                    app.logger.error(f"Error analyzing image {img}: {str(e)}")
+                    # Skip this image if analysis fails
+                    continue
+    except FileNotFoundError:
+        app.logger.warning("Upload directory not found. Creating directory.")
+        os.makedirs(images_dir, exist_ok=True)
+    
     return render_template("ar_museum.html", images=safe_images)
 
 

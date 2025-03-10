@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AR.js Video Player without Markers</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+        }
+        #error-message {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: red;
+            background: white;
+            padding: 5px;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+    <!-- Error message container -->
+    <div id="error-message"></div>
+
+    <!-- Include AR.js and A-Frame libraries -->
+    <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
+
+    <!-- A-Frame Scene -->
+    <a-scene
+        embedded
+        arjs="sourceType: webcam; debugUIEnabled: false;"
+        vr-mode-ui="enabled: false">
+        
+        <!-- Video entity positioned in front of the camera -->
+        <a-entity
+            geometry="primitive: plane; width: 4; height: 2.25"
+            material="color: grey"  
+            position="0 0 -5"
+            rotation="0 0 0">
+            <a-video 
+                src='static/videos/1.mp4'
+                width="4" 
+                height="2.25" 
+                position="0 0 0"  
+                autoplay="true"
+                loop="true">
+            </a-video>
+        </a-entity>
+
+        <!-- Camera -->
+        <a-entity camera></a-entity>
+    </a-scene>
+
+    <script>
+        window.onload = function() {
+            const video = document.querySelector('a-video');
+            const errorMessage = document.getElementById('error-message');
+
+            if (!video) {
+                errorMessage.textContent = "Error: Video element not found in the scene.";
+                return;
+            }
+
+            // Check video loading
+            video.addEventListener('loadeddata', () => {
+                console.log('Video loaded successfully');
+                errorMessage.textContent = "Video loaded successfully";
+            });
+
+            video.addEventListener('error', (e) => {
+                console.error('Video loading error:', e);
+                errorMessage.textContent = "Error loading video: Check console for details.";
+            });
+
+            // Fallback: If video doesn't play, show a message
+            setTimeout(() => {
+                if (!video.components['material']?.material.map) {
+                    errorMessage.textContent = "Video failed to initialize. Check source URL and CORS.";
+                }
+            }, 5000);
+        }
+    </script>
+</body>
+</html>
