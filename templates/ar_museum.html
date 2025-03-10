@@ -9,6 +9,7 @@
         body {
             margin: 0;
             padding: 0;
+            font-family: Arial, sans-serif;
         }
         .loading {
             position: fixed;
@@ -37,6 +38,136 @@
             text-align: center;
             z-index: 1000;
         }
+        /* Publish Button Styles */
+        .publish-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            z-index: 1000;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s;
+        }
+        .publish-btn:hover {
+            background: #45a049;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        }
+        .publish-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 10000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            max-width: 500px;
+            width: 80%;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+        }
+        .modal-title {
+            margin-top: 0;
+            color: #333;
+        }
+        .modal-text {
+            margin-bottom: 20px;
+            color: #555;
+            line-height: 1.5;
+        }
+        .modal-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+        .modal-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        .confirm-btn {
+            background: #4CAF50;
+            color: white;
+        }
+        .confirm-btn:hover {
+            background: #45a049;
+        }
+        .cancel-btn {
+            background: #f44336;
+            color: white;
+        }
+        .cancel-btn:hover {
+            background: #d32f2f;
+        }
+        /* Notification Styles */
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 5px;
+            font-size: 16px;
+            z-index: 10000;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.5s;
+        }
+        .notification.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        .notification.success {
+            border-left: 5px solid #4CAF50;
+        }
+        .notification.error {
+            border-left: 5px solid #f44336;
+        }
+        /* Admin modal styles */
+        .admin-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 10000;
+            justify-content: center;
+            align-items: center;
+        }
+        .admin-modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            max-width: 600px;
+            width: 80%;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+        }
     </style>
 </head>
 <body>
@@ -44,6 +175,42 @@
     <div class="controls-help">
         Use WASD keys to move and mouse/arrows to look around
     </div>
+
+    <!-- Publish Button -->
+    <button class="publish-btn" id="publishBtn">Publish Gallery</button>
+
+    <!-- Confirmation Modal -->
+    <div class="modal" id="confirmModal">
+        <div class="modal-content">
+            <h2 class="modal-title">Publish Gallery</h2>
+            <p class="modal-text">Are you sure you want to submit this gallery for publication? An admin will review your submission before publishing.</p>
+            <div class="modal-buttons">
+                <button class="modal-btn confirm-btn" id="confirmPublish">Confirm</button>
+                <button class="modal-btn cancel-btn" id="cancelPublish">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Review Modal (Simulated) -->
+    <div class="admin-modal" id="adminModal">
+        <div class="admin-modal-content">
+            <h2 class="modal-title">Admin Review Panel</h2>
+            <p class="modal-text">
+                User <strong>Krizzna69</strong> has requested to publish their virtual museum gallery.<br>
+                Submission date: 2025-03-10 04:20:40
+            </p>
+            <div class="gallery-preview" style="margin: 15px 0; height: 200px; background: #f0f0f0; display: flex; justify-content: center; align-items: center; border-radius: 5px;">
+                <p>Gallery Preview</p>
+            </div>
+            <div class="modal-buttons">
+                <button class="modal-btn confirm-btn" id="adminApprove">Approve</button>
+                <button class="modal-btn cancel-btn" id="adminReject">Reject</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification -->
+    <div class="notification" id="notification"></div>
 
     <a-scene>
         <!-- Assets preload -->
@@ -238,12 +405,103 @@
     </a-scene>
 
     <script>
+        // Gallery initialization
         window.addEventListener('load', function() {
             document.querySelector('.loading').style.display = 'none';
             setTimeout(() => {
                 document.querySelector('.controls-help').style.opacity = '0';
                 document.querySelector('.controls-help').style.transition = 'opacity 1s';
             }, 5000);
+        });
+
+        // Publish functionality
+        const publishBtn = document.getElementById('publishBtn');
+        const confirmModal = document.getElementById('confirmModal');
+        const confirmPublish = document.getElementById('confirmPublish');
+        const cancelPublish = document.getElementById('cancelPublish');
+        const adminModal = document.getElementById('adminModal');
+        const adminApprove = document.getElementById('adminApprove');
+        const adminReject = document.getElementById('adminReject');
+        const notification = document.getElementById('notification');
+
+        // Show confirmation modal when publish button is clicked
+        publishBtn.addEventListener('click', function() {
+            confirmModal.style.display = 'flex';
+        });
+
+        // Hide confirmation modal when cancel button is clicked
+        cancelPublish.addEventListener('click', function() {
+            confirmModal.style.display = 'none';
+        });
+
+        // Handle publish confirmation
+        confirmPublish.addEventListener('click', function() {
+            confirmModal.style.display = 'none';
+            
+            // Show loading state on button
+            publishBtn.disabled = true;
+            publishBtn.innerText = 'Sending request...';
+            publishBtn.style.backgroundColor = '#888';
+            
+            // Simulate sending request to admin
+            setTimeout(function() {
+                // Reset button
+                publishBtn.disabled = false;
+                publishBtn.innerText = 'Publish Gallery';
+                publishBtn.style.backgroundColor = '#4CAF50';
+                
+                // Show success notification
+                showNotification('Publication request sent to admin! They will review your gallery soon.', 'success');
+                
+                // Simulate admin review after some time (for demo purposes)
+                setTimeout(function() {
+                    simulateAdminReview();
+                }, 10000); // Show admin review panel after 10 seconds (just for demonstration)
+            }, 2000);
+        });
+
+        // Function to show notification
+        function showNotification(message, type) {
+            notification.innerText = message;
+            notification.className = 'notification ' + type;
+            notification.classList.add('show');
+            
+            setTimeout(function() {
+                notification.classList.remove('show');
+            }, 5000);
+        }
+
+        // Simulate admin review (for demonstration purposes)
+        function simulateAdminReview() {
+            adminModal.style.display = 'flex';
+            
+            adminApprove.addEventListener('click', function() {
+                adminModal.style.display = 'none';
+                showNotification('Your gallery has been approved and published!', 'success');
+            });
+            
+            adminReject.addEventListener('click', function() {
+                adminModal.style.display = 'none';
+                showNotification('Your gallery publication was rejected. Please make improvements and try again.', 'error');
+            });
+        }
+
+        // Close modals when clicking outside the content
+        window.addEventListener('click', function(event) {
+            if (event.target === confirmModal) {
+                confirmModal.style.display = 'none';
+            }
+            if (event.target === adminModal) {
+                adminModal.style.display = 'none';
+            }
+        });
+
+        // Additional keyboard shortcut to close modals with ESC key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                confirmModal.style.display = 'none';
+                adminModal.style.display = 'none';
+            }
         });
     </script>
 </body>

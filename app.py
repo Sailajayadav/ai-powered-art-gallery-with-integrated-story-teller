@@ -20,6 +20,10 @@ from flask import Flask, render_template, request, redirect, url_for, flash, ses
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from functools import wraps
+from admin_routes import admin_blueprint
+
+
+
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'  # Replace with your actual secret key
 
@@ -141,7 +145,7 @@ def analyze_image(image_path):
     caption = processor.decode(out[0], skip_special_tokens=True)
     return caption
     '''
-
+app.register_blueprint(admin_blueprint)
 # Configuration
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 MAX_IMAGES = 8

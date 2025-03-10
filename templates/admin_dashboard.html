@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Virtual Museum Galleries</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .header {
+            background-color: #f0f0f0;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .admin-info {
+            float: right;
+            font-size: 14px;
+        }
+        
+        .container {
+            background-color: white;
+            padding: 20px;
+            border: 1px solid #ddd;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        
+        th {
+            background-color: #f0f0f0;
+        }
+        
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        
+        .status {
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 12px;
+        }
+        
+        .status-pending {
+            background-color: #fff0c0;
+            color: #856404;
+        }
+        
+        .status-approved {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .status-rejected {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        
+        .action-btn {
+            margin-right: 5px;
+            padding: 5px 10px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        
+        .view-btn {
+            background-color: #e0e0e0;
+            color: #333;
+        }
+        
+        .approve-btn {
+            background-color: #28a745;
+            color: white;
+        }
+        
+        .reject-btn {
+            background-color: #dc3545;
+            color: white;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+        
+        .modal-content {
+            background-color: white;
+            margin: 10% auto;
+            padding: 20px;
+            width: 80%;
+            max-width: 800px;
+            border: 1px solid #ddd;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .close {
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        .gallery-preview {
+            border: 1px solid #ddd;
+            height: 400px;
+            margin-bottom: 20px;
+        }
+        
+        .gallery-preview iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        
+        .summary {
+            margin-bottom: 20px;
+        }
+        
+        .summary span {
+            margin-right: 20px;
+            font-weight: bold;
+        }
+        
+        .button-group {
+            text-align: right;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="admin-info">
+            Logged in as: Krizzna69 | Current time: 2025-03-10 04:30:55
+        </div>
+        <h1>Virtual Museum Gallery - Admin Dashboard</h1>
+    </div>
+
+    <div class="container">
+        <h2>Pending Gallery Publication Requests</h2>
+        
+        <div class="summary">
+            <span>Pending: 3</span>
+            <span>Approved: 42</span>
+            <span>Rejected: 12</span>
+            <span>Total: 57</span>
+        </div>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>Gallery Name</th>
+                    <th>Submission Date</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Krizzna69</td>
+                    <td>Modern Art Collection</td>
+                    <td>2025-03-10 04:20:40</td>
+                    <td><span class="status status-pending">Pending</span></td>
+                    <td>
+                        <button class="action-btn view-btn" onclick="openGalleryPreview('Krizzna69', 'Modern Art Collection')">View</button>
+                        <button class="action-btn approve-btn" onclick="approveGallery('Krizzna69', 'Modern Art Collection')">Approve</button>
+                        <button class="action-btn reject-btn" onclick="rejectGallery('Krizzna69', 'Modern Art Collection')">Reject</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>ArtLover22</td>
+                    <td>Renaissance Masterpieces</td>
+                    <td>2025-03-09 18:45:12</td>
+                    <td><span class="status status-pending">Pending</span></td>
+                    <td>
+                        <button class="action-btn view-btn" onclick="openGalleryPreview('ArtLover22', 'Renaissance Masterpieces')">View</button>
+                        <button class="action-btn approve-btn" onclick="approveGallery('ArtLover22', 'Renaissance Masterpieces')">Approve</button>
+                        <button class="action-btn reject-btn" onclick="rejectGallery('ArtLover22', 'Renaissance Masterpieces')">Reject</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>GalleryCreator</td>
+                    <td>Digital Art Showcase</td>
+                    <td>2025-03-08 09:20:35</td>
+                    <td><span class="status status-pending">Pending</span></td>
+                    <td>
+                        <button class="action-btn view-btn" onclick="openGalleryPreview('GalleryCreator', 'Digital Art Showcase')">View</button>
+                        <button class="action-btn approve-btn" onclick="approveGallery('GalleryCreator', 'Digital Art Showcase')">Approve</button>
+                        <button class="action-btn reject-btn" onclick="rejectGallery('GalleryCreator', 'Digital Art Showcase')">Reject</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    
+    <div class="container" style="margin-top: 20px;">
+        <h2>Recent Activity</h2>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>Gallery Name</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th>Admin Comment</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>MuseumFan</td>
+                    <td>Impressionist Collection</td>
+                    <td>2025-03-07 14:30:22</td>
+                    <td><span class="status status-approved">Approved</span></td>
+                    <td>Excellent curation and presentation</td>
+                </tr>
+                <tr>
+                    <td>ArtGallery365</td>
+                    <td>Abstract Art Collection</td>
+                    <td>2025-03-06 10:15:47</td>
+                    <td><span class="status status-rejected">Rejected</span></td>
+                    <td>Image quality too low, lighting needs improvement</td>
+                </tr>
+                <tr>
+                    <td>VirtualCurator</td>
+                    <td>Surrealism Showcase</td>
+                    <td>2025-03-05 16:42:19</td>
+                    <td><span class="status status-approved">Approved</span></td>
+                    <td>Great work on the thematic presentation</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Gallery Preview Modal -->
+    <div id="galleryPreviewModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Gallery Preview</h2>
+                <span class="close" onclick="closeGalleryPreview()">&times;</span>
+            </div>
+            <div id="modalBody">
+                <div class="gallery-details">
+                    <p><strong>User:</strong> <span id="modalUsername"></span></p>
+                    <p><strong>Gallery Name:</strong> <span id="modalGalleryName"></span></p>
+                    <p><strong>Submission Date:</strong> <span id="modalSubmissionDate"></span></p>
+                </div>
+                
+                <div class="gallery-preview">
+                    <iframe id="galleryIframe" src="" title="Gallery Preview"></iframe>
+                </div>
+                
+                <div>
+                    <h3>Admin Notes</h3>
+                    <textarea id="adminNotes" rows="4" style="width: 100%" placeholder="Add your notes here..."></textarea>
+                </div>
+                
+                <div class="button-group">
+                    <button class="action-btn reject-btn" onclick="rejectFromModal()">Reject</button>
+                    <button class="action-btn approve-btn" onclick="approveFromModal()">Approve</button>
+                    <button class="action-btn view-btn" onclick="closeGalleryPreview()">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Store the current gallery being viewed in the modal
+        let currentGallery = {
+            username: '',
+            galleryName: ''
+        };
+
+        // Open gallery preview modal
+        function openGalleryPreview(username, galleryName) {
+            const modal = document.getElementById('galleryPreviewModal');
+            const modalUsername = document.getElementById('modalUsername');
+            const modalGalleryName = document.getElementById('modalGalleryName');
+            const modalSubmissionDate = document.getElementById('modalSubmissionDate');
+            const galleryIframe = document.getElementById('galleryIframe');
+            const modalTitle = document.getElementById('modalTitle');
+            
+            // Set current gallery
+            currentGallery.username = username;
+            currentGallery.galleryName = galleryName;
+            
+            // Set modal content
+            modalUsername.textContent = username;
+            modalGalleryName.textContent = galleryName;
+            modalTitle.textContent = `Gallery Preview: ${galleryName}`;
+            
+            // Set submission date (in a real system, this would come from the server)
+            if (username === 'Krizzna69') {
+                modalSubmissionDate.textContent = '2025-03-10 04:20:40';
+                // In a real system, you would point this to the actual gallery URL
+                galleryIframe.src = '/gallery/krizzna69/modern-art-collection';
+            } else if (username === 'ArtLover22') {
+                modalSubmissionDate.textContent = '2025-03-09 18:45:12';
+                galleryIframe.src = '/gallery/artlover22/renaissance-masterpieces';
+            } else if (username === 'GalleryCreator') {
+                modalSubmissionDate.textContent = '2025-03-08 09:20:35';
+                galleryIframe.src = '/gallery/gallerycreator/digital-art-showcase';
+            }
+            
+            // Clear previous notes
+            document.getElementById('adminNotes').value = '';
+            
+            // Display the modal
+            modal.style.display = 'block';
+        }
+
+        // Close gallery preview modal
+        function closeGalleryPreview() {
+            const modal = document.getElementById('galleryPreviewModal');
+            modal.style.display = 'none';
+        }
+
+        // Approve gallery
+        function approveGallery(username, galleryName) {
+            if (confirm(`Are you sure you want to approve the gallery "${galleryName}" by ${username}?`)) {
+                alert(`Gallery "${galleryName}" by ${username} has been approved and published.`);
+                // In a real application, you would make an API call here
+                // and update the UI upon success
+                updateTableStatus(username, 'Approved');
+            }
+        }
+
+        // Reject gallery
+        function rejectGallery(username, galleryName) {
+            const reason = prompt(`Please provide a reason for rejecting the gallery "${galleryName}" by ${username}:`);
+            if (reason) {
+                alert(`Gallery "${galleryName}" by ${username} has been rejected.\nReason: ${reason}`);
+                // In a real application, you would make an API call here
+                // and update the UI upon success
+                updateTableStatus(username, 'Rejected');
+            }
+        }
+
+        // Approve from modal
+        function approveFromModal() {
+            const notes = document.getElementById('adminNotes').value;
+            if (confirm(`Are you sure you want to approve this gallery?\nAdmin Notes: ${notes || 'None'}`)) {
+                alert(`Gallery "${currentGallery.galleryName}" by ${currentGallery.username} has been approved and published.`);
+                updateTableStatus(currentGallery.username, 'Approved');
+                closeGalleryPreview();
+            }
+        }
+
+        // Reject from modal
+        function rejectFromModal() {
+            const notes = document.getElementById('adminNotes').value;
+            if (!notes) {
+                alert('Please provide feedback in the admin notes before rejecting.');
+                return;
+            }
+            
+            if (confirm(`Are you sure you want to reject this gallery?\nReason: ${notes}`)) {
+                alert(`Gallery "${currentGallery.galleryName}" by ${currentGallery.username} has been rejected.`);
+                updateTableStatus(currentGallery.username, 'Rejected');
+                closeGalleryPreview();
+            }
+        }
+
+        // Update table status
+        function updateTableStatus(username, newStatus) {
+            const tables = document.querySelectorAll('table');
+            tables.forEach(table => {
+                const rows = table.querySelectorAll('tbody tr');
+                
+                rows.forEach(row => {
+                    const usernameCell = row.cells[0];
+                    const statusCell = row.cells[3];
+                    
+                    if (usernameCell.textContent === username) {
+                        const statusSpan = statusCell.querySelector('.status');
+                        statusSpan.className = 'status status-' + newStatus.toLowerCase();
+                        statusSpan.textContent = newStatus;
+                        
+                        // Move approved/rejected entries to the recent activity table
+                        if (newStatus !== 'Pending' && table === tables[0]) {
+                            // Clone the row to recent activity table
+                            const activityTable = tables[1].querySelector('tbody');
+                            const newRow = row.cloneNode(true);
+                            
+                            // Add admin comment cell
+                            const notes = document.getElementById('adminNotes').value || 'No comments provided';
+                            const commentCell = document.createElement('td');
+                            commentCell.textContent = notes;
+                            newRow.appendChild(commentCell);
+                            
+                            // Remove action buttons
+                            const actionCell = newRow.cells[4];
+                            actionCell.remove();
+                            
+                            // Add to recent activity table
+                            activityTable.insertBefore(newRow, activityTable.firstChild);
+                            
+                            // Remove from pending table
+                            row.remove();
+                            
+                            // Update summary counts
+                            updateSummaryCounts();
+                        }
+                    }
+                });
+            });
+        }
+
+        // Update summary counts
+        function updateSummaryCounts() {
+            const pendingTable = document.querySelectorAll('table')[0];
+            const pendingCount = pendingTable.querySelectorAll('tbody tr').length;
+            
+            const activityTable = document.querySelectorAll('table')[1];
+            let approvedCount = 0;
+            let rejectedCount = 0;
+            
+            activityTable.querySelectorAll('tbody tr').forEach(row => {
+                const status = row.cells[3].textContent.trim();
+                if (status === 'Approved') approvedCount++;
+                if (status === 'Rejected') rejectedCount++;
+            });
+            
+            // Update summary
+            const summarySpans = document.querySelector('.summary').querySelectorAll('span');
+            summarySpans[0].textContent = `Pending: ${pendingCount}`;
+            summarySpans[1].textContent = `Approved: ${approvedCount}`;
+            summarySpans[2].textContent = `Rejected: ${rejectedCount}`;
+            summarySpans[3].textContent = `Total: ${pendingCount + approvedCount + rejectedCount}`;
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('galleryPreviewModal');
+            if (event.target == modal) {
+                closeGalleryPreview();
+            }
+        };
+
+        // Close modal on escape key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeGalleryPreview();
+            }
+        });
+    </script>
+</body>
+</html>
